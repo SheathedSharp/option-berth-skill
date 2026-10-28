@@ -1,0 +1,57 @@
+name: Skill
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+concurrency:
+  group: skill-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          persist-credentials: false
+      - name: Check frontmatter and relative links
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os, re, sys
+
+          root = os.getcwd()
+          problems = []
+
+          skill = open(os.path.join(root, "SKILL.md"), encoding="utf-8").read()
+          if not skill.startswith("---\n"):
+              problems.append("SKILL.md: missing frontmatter")
+          else:
+              header = skill.split("---\n", 2)[1]
+              for field in ("name:", "description:"):
+                  if field not in header:
+                      problems.append("SKILL.md: frontmatter has no " + field.rstrip(":"))
+
+          for directory, dirs, files in os.walk(root):
+              dirs[:] = [d for d in dirs if d != ".git"]
+              for name in files:
+                  if not name.endswith(".md"):
+                      continue
+                  path = os.path.join(directory, name)
+                  for number, line in enumerate(open(path, encoding="utf-8"), 1):
+                      for match in re.finditer(r"\]\(([^)\s]+)\)", line):
+                          target = match.group(1)
+                          if target.startswith(("http://", "https://", "mailto:", "#")):
+                              continue
+                          target = target.split("#")[0]
+                          if target and not os.path.exists(os.path.normpath(os.path.join(directory, target))):
+                              problems.append(f"{os.path.relpath(path, root)}:{number} -> {match.group(1)}")
+
+          for entry in problems:
+              print(entry, file=sys.stderr)
+          sys.exit(1 if problems else 0)
+          PY
