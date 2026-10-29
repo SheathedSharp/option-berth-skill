@@ -1,0 +1,19 @@
+{
+  "name": "option-berth",
+  "version": "0.4.0",
+  "description": "Teach a coding agent to inspect and operate one worktree's services with oberth.",
+  "author": {
+    "name": "SheathedSharp",
+    "url": "https://github.com/SheathedSharp"
+  },
+  "homepage": "https://github.com/SheathedSharp/option-berth-skill",
+  "repository": "https://github.com/SheathedSharp/option-berth-skill",
+  "license": "MIT",
+  "keywords": [
+    "option-berth",
+    "oberth",
+    "worktree",
+    "services",
+    "coding-agent"
+  ]
+}
