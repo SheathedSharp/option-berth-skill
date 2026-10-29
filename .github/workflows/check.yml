@@ -17,15 +17,16 @@ jobs:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
         with:
           persist-credentials: false
-      - name: Check frontmatter and relative links
+      - name: Check frontmatter, manifests and relative links
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
-          import os, re, sys
+          import json, os, re, sys
 
           root = os.getcwd()
           problems = []
+          skill_version = None
 
           skill = open(os.path.join(root, "SKILL.md"), encoding="utf-8").read()
           if not skill.startswith("---\n"):
@@ -35,6 +36,67 @@ jobs:
               for field in ("name:", "description:"):
                   if field not in header:
                       problems.append("SKILL.md: frontmatter has no " + field.rstrip(":"))
+              match = re.search(r"^  version:\s*[\"']?([^\"'\n]+)[\"']?\s*$", header, re.M)
+              if match:
+                  skill_version = match.group(1).strip()
+              else:
+                  problems.append("SKILL.md: frontmatter has no metadata.version")
+
+          manifests = {}
+          for name in ("plugin.json", "marketplace.json"):
+              path = os.path.join(root, ".claude-plugin", name)
+              try:
+                  manifests[name] = json.load(open(path, encoding="utf-8"))
+              except (OSError, ValueError) as error:
+                  manifests[name] = None
+                  problems.append(".claude-plugin/" + name + ": " + str(error))
+
+          plugin = manifests.get("plugin.json")
+          if plugin is not None:
+              for field in ("name", "version", "description"):
+                  if not plugin.get(field):
+                      problems.append(".claude-plugin/plugin.json: missing " + field)
+              if plugin.get("name") and not re.fullmatch(r"[a-z0-9]+(-[a-z0-9]+)*", plugin["name"]):
+                  problems.append(".claude-plugin/plugin.json: name must be kebab-case")
+              if skill_version and plugin.get("version") and plugin["version"] != skill_version:
+                  problems.append("version mismatch: SKILL.md metadata.version " + skill_version
+                                  + " != plugin.json version " + plugin["version"])
+
+          marketplace = manifests.get("marketplace.json")
+          if marketplace is not None:
+              if not marketplace.get("name"):
+                  problems.append(".claude-plugin/marketplace.json: missing name")
+              if not (marketplace.get("owner") or {}).get("name"):
+                  problems.append(".claude-plugin/marketplace.json: missing owner.name")
+              entries = marketplace.get("plugins")
+              if not isinstance(entries, list) or not entries:
+                  problems.append(".claude-plugin/marketplace.json: plugins must be a non-empty list")
+              else:
+                  seen = set()
+                  for entry in entries:
+                      if not isinstance(entry, dict) or not entry.get("name") or not entry.get("source"):
+                          problems.append(".claude-plugin/marketplace.json: every plugin needs name and source")
+                          continue
+                      if entry["name"] in seen:
+                          problems.append(".claude-plugin/marketplace.json: duplicate plugin " + entry["name"])
+                      seen.add(entry["name"])
+                      source = entry["source"]
+                      if not isinstance(source, str) or not source.startswith("./"):
+                          problems.append(".claude-plugin/marketplace.json: source must be a ./ relative path")
+                          continue
+                      target = os.path.normpath(os.path.join(root, source))
+                      if target != root and not target.startswith(root + os.sep):
+                          problems.append(".claude-plugin/marketplace.json: source escapes the repository: " + source)
+                      elif not os.path.isfile(os.path.join(target, "SKILL.md")):
+                          problems.append(".claude-plugin/marketplace.json: source has no SKILL.md: " + source)
+                      if plugin is not None and plugin.get("name") and entry["name"] != plugin["name"]:
+                          problems.append(".claude-plugin/marketplace.json: entry " + entry["name"]
+                                          + " does not match plugin.json name")
+
+          readme = open(os.path.join(root, "README.md"), encoding="utf-8").read()
+          for command in ("npx skills add", "/plugin install option-berth"):
+              if command not in readme:
+                  problems.append("README.md: missing documented install command: " + command)
 
           for directory, dirs, files in os.walk(root):
               dirs[:] = [d for d in dirs if d != ".git"]

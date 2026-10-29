@@ -1,0 +1,14 @@
+{
+  "name": "sheathedsharp",
+  "description": "Agent plugins from SheathedSharp",
+  "owner": {
+    "name": "SheathedSharp"
+  },
+  "plugins": [
+    {
+      "name": "option-berth",
+      "source": "./",
+      "description": "Read and operate one worktree's services with oberth."
+    }
+  ]
+}

@@ -13,8 +13,40 @@
 
 ## 安装
 
-skill 随本仓库分发，装不装由使用者决定；引擎不会替你装。用**软链**指向克隆下来的仓库，
-这样 `git pull` 之后 agent 看到的就是新版本：
+skill 随本仓库分发，装不装由使用者决定；引擎不会替你装。下面三种方式**选一种**，
+不要在同一台机器上同时装两份同名 skill。
+
+### Skills CLI（推荐）
+
+支持 Claude Code、Codex、Cursor、OpenCode 等本机已安装的 agent：
+
+```sh
+npx skills add SheathedSharp/option-berth-skill -g
+```
+
+`-g` 装到用户级；去掉它则装进当前项目，随仓库共享。安装器会识别现有的 agent，
+默认用软链指向一份规范副本。之后用同一套命令检查和更新：
+
+```sh
+npx skills check
+npx skills update
+npx skills remove option-berth
+```
+
+### Claude Code 插件市场
+
+```text
+/plugin install option-berth --marketplace SheathedSharp/option-berth-skill
+```
+
+插件市场名是 `sheathedsharp`。旧版 Claude Code 先运行
+`/plugin marketplace add SheathedSharp/option-berth-skill`，再运行
+`/plugin install option-berth@sheathedsharp`。更新用
+`/plugin marketplace update sheathedsharp`，卸载用
+`/plugin uninstall option-berth@sheathedsharp`。插件内的 skill 带命名空间，
+不会和散落目录里的同名 skill 混淆。
+
+### 手工克隆 + 软链（离线或固定版本）
 
 ```sh
 git clone https://github.com/SheathedSharp/option-berth-skill.git
@@ -22,8 +54,11 @@ mkdir -p ~/.claude/skills          # 以 Claude Code 为例；其他 agent 用�
 ln -sfn "$PWD/option-berth-skill" ~/.claude/skills/option-berth
 ```
 
-复制过去的那份不会自己更新：命令或 `--json` 形状变了它还停在旧契约上，于是同一台机器上
-会出现两份同名 skill，agent 用哪份不确定。
+这条路径靠 `git pull` 更新。如果复制而不是软链，那份不会自己更新：命令或 `--json`
+形状变了它还停在旧契约上。
+
+发布新契约时，同步 `SKILL.md` 的 `metadata.version` 与 `.claude-plugin/plugin.json`
+的 `version`；插件市场按后者判断是否把更新推给已安装的用户。
 
 ## 内容
 
@@ -43,5 +78,9 @@ ln -sfn "$PWD/option-berth-skill" ~/.claude/skills/option-berth
 The skill that teaches a coding agent to read one worktree's declared services and runtime
 facts, run them, find out why they are not running, and leave the work behind for the next
 session. It is one of three independent products and talks to the others only through the
-`oberth` CLI and its `--json` contract. Install it by symlinking this clone into your agent's
-skills directory so `git pull` is the update.
+`oberth` CLI and its `--json` contract.
+
+Install it with `npx skills add SheathedSharp/option-berth-skill -g`, or in Claude Code with
+`/plugin install option-berth --marketplace SheathedSharp/option-berth-skill`. Both keep one
+canonical copy and update it in place. Cloning and symlinking into your agent's skills directory
+remains the offline option; update that one with `git pull`.
