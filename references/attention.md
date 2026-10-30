@@ -1,8 +1,21 @@
-# Attention and Jev handoff
+# Attention and Jev handoff (optional)
 
-Use this guide only when `oberth status --json` publishes `attention_path`, or
-when a task explicitly asks about Jev, human-in-the-loop handling, or quality
-feedback. The complete adapter contract is in
+This guide is optional. Do not read it by default after `oberth status --json`,
+and do not treat `attention_path` as a required step in the service loop. Open
+it only when:
+
+- the task explicitly asks about Jev, human-in-the-loop handling, or quality
+  feedback; or
+- a current anomaly blocks the task and a person must choose among the fixed
+  options.
+
+Do not use it for a routine failure already explained by
+[operations.md](operations.md) (`start_failed`, `crashed`, `port_occupied`,
+`ready_timeout`, `dependency_not_ready`), for an unreferenced `machine:` entry
+that no declared service `depends_on`, for a normally stopped service, or on
+every status read merely because `attention_path` exists.
+
+The complete adapter contract is in
 [`docs/jev-adapter.md`](https://github.com/SheathedSharp/option-berth/blob/main/docs/jev-adapter.md).
 
 ## Verify before acting
@@ -23,15 +36,18 @@ bounded next steps. After the person chooses, run only the documented command,
 report its result, and read status again. A low-confidence, stale, conflicting,
 or context-only handoff goes back to the person.
 
-## Task-scoped runner
+## Task-scoped runner (only when asked)
 
-When a task keeps services running or coordinates concurrent worktrees, the
-agent should arm one task-scoped session immediately after the initial status
-read. The session owns its poller and is stopped when the task ends.
+Arm a session only when the person asks for continuous attention on a
+long-running task or while coordinating concurrent worktrees. For a one-shot
+start, diagnose, fix, and confirm, use the service loop in
+[operations.md](operations.md) and stop; do not create a task context or arm a
+session.
 
-**Nothing on the machine creates the task context — you do.** It is your own
-statement of what this task is and which of the fixed options it may present.
-For a short task, pass it inline:
+The session owns its poller and is stopped when the task ends. **Nothing on the
+machine creates the task context — you do.** It is your own statement of what
+this task is and which of the fixed options it may present. For a short task,
+pass it inline:
 
 ```sh
 jev-attention --session --project "$PWD" \
