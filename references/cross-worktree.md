@@ -4,6 +4,12 @@ Use this guide when the task explicitly names another local checkout,
 repository, or integration workspace. The agent owns the subscription; the
 person does not need to start a watcher for the agent.
 
+`workspace:` in `oberth.yaml` is a read-only address reference to another
+checkout's service ([manifest.md](manifest.md)). `--workspace NAME` on
+`oberth events` is an ephemeral subscription label. They are different things;
+do not infer one from the other. The identity ledger is `oberth worktrees`; it
+is not an events subscription and does not start or stop anything.
+
 ## Select and subscribe
 
 Only use relationships stated by the task or the person. Never infer a member

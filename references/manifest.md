@@ -12,6 +12,7 @@ Top-level keys:
 | `name` | The project name `oberth` knows this worktree by. Defaults to the directory name. |
 | `services` | The services `oberth up` starts and `oberth down` stops. |
 | `machine` | Services the machine already runs (a database, middleware). Each entry has `name` and `port`. Read-only references: `up`/`down` never start or stop them. |
+| `workspace` | Services in another checkout, addressed read-only. Each entry has `name`, `worktree`, and `service`. `up`/`down`/`restart` never start or stop the other checkout. |
 | `ports` | Extra fixed ports this project claims beyond its services. |
 | `worktree_ports` | How many auto ports a linked-worktree claim takes by default. |
 | `$schema` | Optional JSON Schema URL for editor completion. It is metadata, not a service. |
@@ -29,6 +30,7 @@ Each entry in `services`:
 | `health` | An HTTP path, `{tcp: port}`, or `{command: ...}`. `up --wait` and dependency waits use it. | `health_status: fail`, `ready_timeout`, and a dependency that never becomes ready. |
 | `depends_on` | Declared services that must be started first; a portless dependency is ready when its run is active, a ported one when it listens (and is healthy when declared). | `dependency_not_ready`, `dependency_timeout`. |
 | `env` | Environment added when option-berth starts the service. Values may use the references below. | A service that starts with the wrong configuration. |
+| `env_file` | A dotenv-style file read before `prepare` and `cmd`; relative to the manifest directory. Its contents do not enter `status`, logs, or `spec_hash`. | A service that cannot start because the file is missing or malformed. |
 | `description`, `icon`, `color` | User-authored metadata shown by clients; they do not change runtime behavior. | Nothing. |
 
 `port: auto` is assigned by the daemon. `restart --only` keeps that reservation
@@ -51,7 +53,7 @@ health: {command: pg_isready -h 127.0.0.1 -p ${port}}
   declared `port`; use this for a raw TCP service.
 - `{command: ...}` runs in the service `cwd`, split into argv the same way as
   `cmd:` (no shell), and exit code 0 is healthy. It supports `${port}`, `${url}`,
-  `${<service>.port}`, and `${worktree}`. Use it when the port opens before the
+  `${<name>.port}`, and `${worktree}`. Use it when the port opens before the
   protocol is ready (databases) or when readiness needs a real client.
 - An object form has exactly one of `http`, `tcp`, or `command`.
 - HTTP and TCP only prove the port is reachable. They do not prove the protocol
@@ -63,29 +65,93 @@ health: {command: pg_isready -h 127.0.0.1 -p ${port}}
 ## References
 
 `prepare:`, `cmd:`, and `env:` may reference ports and the checkout identity.
-A command-form `health:` supports the same `${port}`, `${url}`,
-`${<service>.port}`, and `${worktree}` tokens, but not another service's URL.
-The daemon expands them before starting the service:
+A command-form `health:` supports `${port}`, `${url}`, `${<name>.port}`, and
+`${worktree}`, but not `${<name>.url}` and not a `workspace:` address. The
+daemon expands them before starting the service:
 
 | Reference | Expands to |
 |---|---|
 | `${port}` / `${url}` | This service's own port / `http://localhost:<port>` |
-| `${<service>.port}` / `${<service>.url}` | Another declared service's port / URL |
+| `${<name>.port}` / `${<name>.url}` | A service in this manifest, a `machine:` reference, or a `workspace:` reference |
 | `${worktree}` | This checkout's stable identity, shaped like `wt_0123456789ab` |
 
+- `<name>` is looked up first in `services:`, then in `machine:`, then in
+  `workspace:`. A service, machine entry, and workspace entry cannot share a
+  name.
 - Only these shapes are references. Other `${...}` text (for example `${HOME}`
   or `${FOO:-x}`) is left unchanged for the command.
-- A reference to an undeclared service, or a port reference to a service
-  without a port, is rejected by manifest validation instead of being passed
-  through.
+- A reference to an undeclared name, or a port reference to a service without a
+  port, is rejected by manifest validation instead of being passed through.
 - `${worktree}` is derived from the normalized root path of the checkout that
   holds the manifest. The same worktree gets the same value on every start;
   the main checkout and every linked worktree get different values. It is an
   identifier, not a path: use it in a database name (`app_${worktree}`) or a
   relative data directory (`.data/${worktree}`).
+- The current value is published as `worktree.identity` in `status --json`.
+  `oberth worktrees` lists the identities this daemon has seen. Use those
+  values when connecting a database or finding old data; the engine does not
+  delete data.
 - Moving a checkout produces a new identity; old data is not moved. `${worktree}`
   does not point at a service and does not create or need a `depends_on` entry.
   `down` only stops this worktree's services; it never deletes data.
+- `oberth start -- <command>` expands `${<name>.port}`, `${<name>.url}`, and
+  `${worktree}` in its arguments before execution. A declared but currently
+  unaddressable reference fails the command; `${...}` is not passed through
+  literally. Bare `${port}` / `${url}` expand only when `--port` is given.
+
+## Shared environment files
+
+`env_file:` points at a dotenv-style file. A relative path is resolved against
+the directory holding `oberth.yaml`, so `../shared/dev.env` can live outside the
+checkout and serve several worktrees:
+
+```yaml
+env_file: ../shared/dev.env
+```
+
+- It is read before `prepare:` and before the long-lived `cmd:`.
+- Blank lines and lines starting with `#` are ignored. An optional `export `
+  prefix is accepted. Single-quoted values are literal; double-quoted values
+  support `\n`, `\r`, `\t`, `\\`, and `\"`.
+- Values are not interpolated: `${...}` stays literal.
+- Environment precedence, low to high: the daemon's own environment, the
+  caller's environment, `env_file`, `PORT`, the service's own `env:`.
+- A missing file, a non-regular file, or a malformed line fails the service
+  start. The error names the file and line and does not print values.
+- The contents do not enter `status`, logs, or `spec_hash`. Changing the file
+  does not require a daemon restart, but a running service must restart to read
+  it. option-berth never creates or modifies the file; secrets belong here, not
+  in the manifest.
+
+## Cross-worktree address references
+
+`workspace:` lists services in another checkout. It only provides addresses; it
+does not participate in start or stop:
+
+```yaml
+workspace:
+  - name: backend
+    worktree: ../backend
+    service: api
+```
+
+- `worktree` is the other checkout's root (relative to the manifest directory
+  or absolute), or its manifest file. `service` is a service name in that
+  manifest.
+- `prepare:`, `cmd:`, and `env:` can then use `${backend.port}` /
+  `${backend.url}`.
+- Resolution reads the other manifest and the daemon's published runtime facts:
+  a running service uses its actual port (including `port: auto`); a stopped
+  service with a fixed port uses the declared address; `port: auto` without a
+  running service is unaddressable and the referencing service fails to start
+  with the reason.
+- `up`, `down`, and `restart` never start or stop the other checkout and do not
+  create a `depends_on` relation. A `workspace:` name cannot collide with a
+  service or `machine:` name.
+- Health checks do not accept `workspace:` references.
+- `workspace:` in `oberth.yaml` is not the `--workspace` label on
+  `oberth events`; that label is an ephemeral subscription relation. Do not
+  infer one from the other.
 
 ## `prepare_inputs` and the prepare cache
 
@@ -170,6 +236,13 @@ It is generated from the Go declaration types; do not edit it by hand.
 - **Running process predates the manifest.** `restart --only <service>`; do not
   edit the manifest back to match the old process. `manifest_runtime_mismatch`
   is the signal.
+- **Shared env file missing or malformed.** Read the error's file and line; it
+  does not print values. The person owns that file: fix its path or content, and
+  do not inline secrets into `oberth.yaml`.
+- **Workspace address unresolved.** Check the other checkout's manifest and
+  whether its service is running. `port: auto` without a running service cannot
+  be addressed; start that service or give it a fixed port. Do not add a
+  `depends_on` relation or copy the other address into this manifest.
 - **Unreferenced `machine:` entry.** Its `listening` value is the whole story.
   It has no start/stop operation and does not need a handoff.
 - **An `observation_*` error, not a manifest problem.** The manifest was read

@@ -2,7 +2,7 @@
 name: option-berth
 description: Use oberth to inspect and operate services for the current worktree, read the engine's failure reason and next step, tell a trustworthy listener observation from a sandbox limitation, and observe explicitly related local worktrees during parallel development.
 metadata:
-  version: "0.6.0"
+  version: "0.7.0"
   source: "github.com/SheathedSharp/option-berth"
 ---
 
@@ -64,11 +64,12 @@ oberth git diff --json --file path/to/file
 
 Read the detailed guide only for the mode the task needs:
 
-- Service start, stop, restart, logs, status reporting, a failed start, or an
-  observation/sandbox error: [references/operations.md](references/operations.md).
-- Manifest drafting, adoption, `prepare:` / `prepare_inputs:`, health checks,
-  ports and references such as `${worktree}`, or `machine:`
-  [references/manifest.md](references/manifest.md).
+- Service start, stop, restart, logs, status reporting, a failed start, an
+  observation/sandbox error, or worktree identity and cleanup:
+  [references/operations.md](references/operations.md).
+- Manifest drafting, adoption, `prepare:` / `prepare_inputs:`, `env_file:`,
+  health checks, ports and references such as `${worktree}`, `machine:`, or
+  `workspace:` [references/manifest.md](references/manifest.md).
 - What work has been done in this worktree, or which workplace new work belongs
   to: [references/workplace.md](references/workplace.md).
 - Explicitly related worktrees or repositories:
@@ -90,6 +91,11 @@ Read the detailed guide only for the mode the task needs:
 - `machine:` entries are read-only dependencies. `up` and `down` do not operate
   them; `kill` requires a specifically named target and the existing approval
   boundary. An unreferenced `machine:` entry never justifies a handoff.
+- `workspace:` entries are read-only addresses in another checkout. `up`,
+  `down`, and `restart` never start or stop the other checkout. `oberth
+  worktrees` is a read-only identity ledger: never delete a database, data
+  directory, or checkout on the person's behalf. To stop a checkout whose
+  directory is gone, use `oberth down --identity <wt_…>`.
 - A person owns `oberth.yaml`. The agent may draft and explain a manifest, but
   adoption is an explicit human choice. Do not edit it to hide a failure.
 - Do not write hooks, MCP registrations, agent configuration, or a second
