@@ -63,7 +63,8 @@ ln -sfn "$PWD/option-berth-skill" ~/.claude/skills/option-berth
 ## 内容
 
 - [SKILL.md](SKILL.md) — 入口：先读当前 worktree，再按任务选一份 reference。
-- `references/` — 起停与状态、清单起草、工作记录、跨 worktree 观察、attention 交接。
+- `references/` — 起停与失败原因、清单起草与采纳、工作记录、跨 worktree 观察；
+  attention 交接只在明确需要人工选择时使用。
 
 契约以引擎仓库为准：[CLI](https://github.com/SheathedSharp/option-berth/blob/main/docs/cli.md)、
 [清单](https://github.com/SheathedSharp/option-berth/blob/main/docs/cli.md)、
