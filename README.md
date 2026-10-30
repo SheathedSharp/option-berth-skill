@@ -25,7 +25,9 @@ npx skills add SheathedSharp/option-berth-skill -g
 ```
 
 `-g` 装到用户级；去掉它则装进当前项目，随仓库共享。安装器会识别现有的 agent，
-默认用软链指向一份规范副本。之后用同一套命令检查和更新：
+默认用软链指向一份规范副本。本机有多个 agent 时它会停下来让你选；非交互安装用
+`npx --yes skills@latest add SheathedSharp/option-berth-skill -g -y -a claude-code`
+（`-a` 换成你的 agent）。之后用同一套命令检查和更新：
 
 ```sh
 npx skills check
