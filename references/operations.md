@@ -35,6 +35,39 @@ all-listener exception. It is not a replacement for `down`.
 Keep facts separate from guesses. A missing or ambiguous service/port result is
 actionable output; it is not permission to scan the whole machine.
 
+`oberth start -- <command>` expands `${<name>.port}`, `${<name>.url}`, and
+`${worktree}` in its arguments from this worktree's address book (services,
+`machine:`, and `workspace:`), using the actual port for `port: auto`. A
+declared but currently unaddressable reference fails the command instead of
+passing `${...}` through. Bare `${port}` / `${url}` expand only with `--port`.
+Use `up` for manifest services; `start` is the explicit single-command entry.
+
+## Worktree identity and cleanup
+
+`status --json` publishes `worktree.identity`, the same value `${worktree}`
+expands to. Use it to name per-worktree data (`app_<identity>`,
+`.data/<identity>`).
+
+`oberth worktrees [--gone] --json` is a read-only identity ledger. Each row has
+`identity`, `root`, `group`, `exists`, and `last_seen`. It is not a runtime fact:
+rows remain after a checkout is deleted or moved, and `exists` is re-checked
+from the filesystem on every read. `--gone` keeps only checkouts that no longer
+exist.
+
+- It never deletes ledger rows, databases, data directories, or running
+  processes. Deleting a worktree's data is the person's action.
+- Without a daemon or before any identity is recorded, it returns an empty list;
+  it does not start a daemon or create a database.
+- To stop services whose checkout is gone, use
+  `oberth down --identity <wt_…>`. The value comes from `worktree.identity` or
+  `oberth worktrees`. `down --worktree PATH` does the same while the directory
+  exists. Neither can be combined with a project name or manifest path.
+- An unknown identity is `not_found`. An explicit identity with nothing to stop
+  is a successful empty stop, not an error.
+- A project name is a group scope. If two checkouts share a group name,
+  `down <project>` and an explicit identity return `ambiguous`; use `kill` by
+  port or PID instead of guessing which one to stop.
+
 ## Failure reasons and next steps
 
 `status.worktree.services[]` publishes the evidence to branch on:
