@@ -1,8 +1,8 @@
 ---
 name: option-berth
-description: Use oberth to inspect and operate services for the current worktree, observe explicitly related local worktrees during parallel development, and arm task-scoped attention for long-running service work.
+description: Use oberth to inspect and operate services for the current worktree, read the engine's failure reason and next step, and observe explicitly related local worktrees during parallel development.
 metadata:
-  version: "0.4.0"
+  version: "0.5.0"
   source: "github.com/SheathedSharp/option-berth"
 ---
 
@@ -17,7 +17,7 @@ of it: it is how a coding agent is meant to learn `oberth`. Commands are grouped
 by what you are trying to do — facts, operations, code and declaration, handoff,
 runtime — and `oberth --help` shows the same grouping.
 
-## Always start here
+## Default loop
 
 Read the current worktree before reasoning about services:
 
@@ -26,19 +26,25 @@ oberth status --json
 ~~~
 
 This gives the declaration, service runs, listeners attributed to the worktree,
-branch and dirty counts, recent exits, any pending manifest draft, and
-`attention_path` when a deterministic anomaly is current. Do not turn it into a
-question about every port on the machine.
+branch and dirty counts, recent exits, and any pending manifest draft. Do not
+turn it into a question about every port on the machine.
 
-When `attention_path` appears, read
-[references/attention.md](references/attention.md) and follow that handoff
-before acting on the anomaly.
+For a service task, the default loop is:
 
-When the task keeps declared services running or spans concurrent worktrees,
-arm the task-scoped attention session after the initial status read. Use the
-documented fixed option IDs in the task context, keep the session alive for the
-task, and stop it when the task ends. A quiet session does not call Jev; it
-records that the task was being watched so a zero-call result is explainable.
+1. Read `status --json` and the declared services.
+2. Run the operation: `oberth up --wait --json`,
+   `oberth restart --only <service> --json`, or `oberth down --json`.
+3. On failure, match `last_exit.reason` and `health_status` against the table in
+   [references/operations.md](references/operations.md), and read the log the
+   reason names.
+4. Fix the declared input, repeat the operation, and refresh `status --json`.
+
+`attention_path` is optional context, not a required branch after `status`.
+Read [references/attention.md](references/attention.md) only when the task is
+explicitly about Jev, quality feedback, or human handoff, or when the current
+anomaly blocks the task and a person must choose among the fixed options. A
+`machine:` entry that no declared service `depends_on` is a read-only fact:
+report its `listening` value; do not hand it off, arm a session, or start it.
 
 For code changes, read the worktree-scoped Git summary as well:
 
@@ -49,15 +55,15 @@ oberth git diff --json --file path/to/file
 
 Read the detailed guide only for the mode the task needs:
 
-- Service start, stop, restart, logs, or status reporting: read
+- Service start, stop, restart, logs, status reporting, or a failed start:
   [references/operations.md](references/operations.md).
-- What work has been done in this worktree, or which workplace new work belongs
-  to: read [references/workplace.md](references/workplace.md).
-- Explicitly related worktrees or repositories: read
-  [references/cross-worktree.md](references/cross-worktree.md).
-- Manifest drafting or adoption: read
+- Manifest drafting, adoption, `prepare:`, ports, or `machine:`:
   [references/manifest.md](references/manifest.md).
-- `attention_path`, Jev, human-in-the-loop, or quality feedback: read
+- What work has been done in this worktree, or which workplace new work belongs
+  to: [references/workplace.md](references/workplace.md).
+- Explicitly related worktrees or repositories:
+  [references/cross-worktree.md](references/cross-worktree.md).
+- `attention_path`, Jev, human-in-the-loop, or quality feedback (optional):
   [references/attention.md](references/attention.md).
 
 ## Boundaries
@@ -67,11 +73,13 @@ Read the detailed guide only for the mode the task needs:
   `oberth`.
 - `machine:` entries are read-only dependencies. `up` and `down` do not operate
   them; `kill` requires a specifically named target and the existing approval
-  boundary.
+  boundary. An unreferenced `machine:` entry never justifies a handoff.
 - A person owns `oberth.yaml`. The agent may draft and explain a manifest, but
-  adoption is an explicit human choice.
+  adoption is an explicit human choice. Do not edit it to hide a failure.
 - Do not write hooks, MCP registrations, agent configuration, or a second
   product model. Do not answer the whole-machine port-radar question.
+- Do not arm a task-scoped attention session by default. Arm it only when the
+  person explicitly asks for continuous attention on a long-running task.
 - Refresh `oberth status --json` after a control command and before acting on a
   derived attention request.
 
