@@ -1,8 +1,8 @@
 ---
 name: option-berth
-description: Use oberth to inspect and operate services for the current worktree, read the engine's failure reason and next step, and observe explicitly related local worktrees during parallel development.
+description: Use oberth to inspect and operate services for the current worktree, read the engine's failure reason and next step, tell a trustworthy listener observation from a sandbox limitation, and observe explicitly related local worktrees during parallel development.
 metadata:
-  version: "0.5.0"
+  version: "0.6.0"
   source: "github.com/SheathedSharp/option-berth"
 ---
 
@@ -26,18 +26,27 @@ oberth status --json
 ~~~
 
 This gives the declaration, service runs, listeners attributed to the worktree,
-branch and dirty counts, recent exits, and any pending manifest draft. Do not
-turn it into a question about every port on the machine.
+branch and dirty counts, recent exits, any pending manifest draft, and — when
+the listener table cannot be trusted — the top-level `observation`. Do not turn
+it into a question about every port on the machine.
+
+Read `observation` before you use `ports`: `ports: []` together with
+`observation.state: blind` or `bind_denied` means this process cannot see
+listeners, not that nothing is running. The observation section of
+[references/operations.md](references/operations.md) says what to do next.
 
 For a service task, the default loop is:
 
-1. Read `status --json` and the declared services.
+1. Read `status --json`, the declared services, and `observation`.
 2. Run the operation: `oberth up --wait --json`,
    `oberth restart --only <service> --json`, or `oberth down --json`.
 3. On failure, match `last_exit.reason` and `health_status` against the table in
    [references/operations.md](references/operations.md), and read the log the
    reason names.
-4. Fix the declared input, repeat the operation, and refresh `status --json`.
+4. If the command itself returned an `observation_*` code, it is a fact about
+   this process, not a service `last_exit.reason`. Follow the observation and
+   sandbox section instead of the exit table.
+5. Fix the declared input, repeat the operation, and refresh `status --json`.
 
 `attention_path` is optional context, not a required branch after `status`.
 Read [references/attention.md](references/attention.md) only when the task is
@@ -55,9 +64,10 @@ oberth git diff --json --file path/to/file
 
 Read the detailed guide only for the mode the task needs:
 
-- Service start, stop, restart, logs, status reporting, or a failed start:
-  [references/operations.md](references/operations.md).
-- Manifest drafting, adoption, `prepare:`, ports, or `machine:`:
+- Service start, stop, restart, logs, status reporting, a failed start, or an
+  observation/sandbox error: [references/operations.md](references/operations.md).
+- Manifest drafting, adoption, `prepare:` / `prepare_inputs:`, health checks,
+  ports and references such as `${worktree}`, or `machine:`
   [references/manifest.md](references/manifest.md).
 - What work has been done in this worktree, or which workplace new work belongs
   to: [references/workplace.md](references/workplace.md).
@@ -71,6 +81,12 @@ Read the detailed guide only for the mode the task needs:
 - Facts come from the CLI and daemon. Do not infer runtime facts from model
   output, ports, process names, branches, or logs that were not published by
   `oberth`.
+- An observation code is evidence about this process, not about the machine.
+  Do not retry the identical sandboxed call, do not start a daemon from the
+  sandbox, and never report an empty `ports` list as "nothing is running".
+  Report the code and hint; the bounded next step is a normal terminal with
+  `oberth serve --detach`, or `oberth doctor --only listener_observation` to
+  confirm the limitation.
 - `machine:` entries are read-only dependencies. `up` and `down` do not operate
   them; `kill` requires a specifically named target and the existing approval
   boundary. An unreferenced `machine:` entry never justifies a handoff.

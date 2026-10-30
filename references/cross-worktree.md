@@ -36,6 +36,11 @@ refresh the current worktree status before taking any action. If the stream
 ends, emits `resync_required`, or reports `workspace_changed`, read a fresh
 snapshot with `oberth events --once` before interpreting later changes.
 
+A blind daemon is not an empty machine. `oberth daemon status --json` and
+`daemon.hello` carry the same `observation`; when its `state` is not
+`observable`, do not read missing services or ports from a snapshot as stopped
+or free. See [operations.md](operations.md).
+
 A change can report a failure kind such as `service_failed`. On one, refresh the
 current worktree status and use [operations.md](operations.md) to read the
 reason and next step. If the change blocks the task and status publishes

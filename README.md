@@ -60,10 +60,15 @@ ln -sfn "$PWD/option-berth-skill" ~/.claude/skills/option-berth
 发布新契约时，同步 `SKILL.md` 的 `metadata.version` 与 `.claude-plugin/plugin.json`
 的 `version`；插件市场按后者判断是否把更新推给已安装的用户。
 
+引擎仓库的 `scripts/check_skill_contract.py` 会从 CLI 契约、清单 schema 与 observation
+常量提取锚点，检查本仓库的 `SKILL.md` 与 `references/*.md` 是否覆盖。契约变化时先更新
+内容，再同步版本号；只改版本号不会让引擎的检查通过。
+
 ## 内容
 
 - [SKILL.md](SKILL.md) — 入口：先读当前 worktree，再按任务选一份 reference。
-- `references/` — 起停与失败原因、清单起草与采纳、工作记录、跨 worktree 观察；
+- `references/` — 起停与失败原因、监听观察与沙箱、清单起草与采纳（含 `prepare_inputs`、
+  `health` 三种写法与 `${worktree}` 引用）、工作记录、跨 worktree 观察；
   attention 交接只在明确需要人工选择时使用。
 
 契约以引擎仓库为准：[CLI](https://github.com/SheathedSharp/option-berth/blob/main/docs/cli.md)、
