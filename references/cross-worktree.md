@@ -37,12 +37,13 @@ ends, emits `resync_required`, or reports `workspace_changed`, read a fresh
 snapshot with `oberth events --once` before interpreting later changes.
 
 A change can report a failure kind such as `service_failed`. On one, refresh the
-current worktree status; if it publishes `attention_path`, read
-[attention.md](attention.md) and follow its handoff before acting. A task that
-stays active while services run should arm a task-scoped
-`jev-attention --session` runner for each explicitly selected worktree. The
-runner watches the same handoffs and records local quality telemetry without
-starting, stopping, or restarting a service.
+current worktree status and use [operations.md](operations.md) to read the
+reason and next step. If the change blocks the task and status publishes
+`attention_path`, read [attention.md](attention.md) only for that decision; do
+not follow an artifact merely because it exists. Arm a task-scoped
+`jev-attention --session` runner only when the person asks for continuous
+attention. The runner watches the same handoffs and records local quality
+telemetry without starting, stopping, or restarting a service.
 
 The stream contains runtime facts only: no commands, working directories,
 logs, or environment values. It never starts, stops, or restarts a service.
