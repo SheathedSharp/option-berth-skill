@@ -25,49 +25,13 @@ npx skills add SheathedSharp/option-berth-skill -g
 ```
 
 `-g` 装到用户级；去掉它则装进当前项目，随仓库共享。安装器会识别现有的 agent，
-默认用软链指向一份规范副本。本机有多个 agent 时它会停下来让你选；非交互安装用
-`npx --yes skills@latest add SheathedSharp/option-berth-skill -g -y -a claude-code`
-（`-a` 换成你的 agent）。之后用同一套命令检查和更新：
+默认用软链指向一份规范副本。之后用同一套命令检查和更新：
 
 ```sh
 npx skills check
 npx skills update
 npx skills remove option-berth
 ```
-
-#### 克隆超时时的兜底
-
-`npx skills add` 在克隆阶段超时，通常不是仓库大小的问题：本仓库约 400 KiB、17 个提交，
-浅克隆本机约 2 秒。CLI 会先用 GitHub API 和 raw 各试 10 秒，最后用 `git clone --depth 1`
-并给整段克隆 300 秒；网络、代理或 agent 沙箱卡住时，就会等满 5 分钟再报
-`Clone timed out after 300s`。按下面的顺序换一条路，`-a` 换成你的 agent。
-
-1. 直接下载归档，绕过 GitHub API 和 `git clone`：
-
-   ```sh
-   npx --yes skills@latest add \
-     https://codeload.github.com/SheathedSharp/option-berth-skill/tar.gz/refs/heads/main \
-     -g -y -a claude-code --copy
-   ```
-
-   需要固定版本时，把 `refs/heads/main` 换成具体的 commit SHA。
-
-2. 本机先浅克隆，再把本地目录交给 CLI：
-
-   ```sh
-   git clone --depth 1 https://github.com/SheathedSharp/option-berth-skill.git /tmp/option-berth-skill
-   npx --yes skills@latest add /tmp/option-berth-skill -g -y -a claude-code --copy
-   ```
-
-3. 必须走 `git clone` 时，提高超时并给 GitHub API 一个 token：
-
-   ```sh
-   SKILLS_CLONE_TIMEOUT_MS=600000 GITHUB_TOKEN=... \
-     npx skills add SheathedSharp/option-berth-skill -g
-   ```
-
-`DISABLE_TELEMETRY=1` 可以省掉安装后的遥测和审计请求（约 3–5 秒），但不会改变克隆超时。
-不要在 agent 沙箱里运行安装：沙箱可能禁止网络或 `git` 子进程，表现同样是克隆超时。
 
 ### Claude Code 插件市场
 
