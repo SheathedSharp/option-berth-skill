@@ -73,8 +73,9 @@ exist.
 `status.worktree.services[]` publishes the evidence to branch on:
 `last_exit.reason` (and its exit code), `last_exit.port_hint` /
 `last_exit.port_holder` for a port conflict, `health_status` (with `status`,
-`code`, `reason`, `observed_at`), `log_path`, and
-`manifest_runtime_mismatch`. Read those fields before choosing a next step.
+`code`, `reason`, `observed_at`), `log_path`, `manifest_runtime_mismatch`, and
+`code_changed_since_start` (with `code_changed_files` and `code_hint`). Read
+those fields before choosing a next step.
 
 | Evidence | Meaning | Next step |
 |---|---|---|
@@ -86,6 +87,7 @@ exist.
 | `stopped` / `exited` (code 0) | Normal stop or clean exit, not a failure. | Report the state; do not "recover" it. |
 | `health_status: fail` (with `code`/`reason`) | A listener exists but the declared health probe failed. | Read the log; for an HTTP path check the route, for `{tcp: port}` confirm the port matches the declared `port`, for `{command: ...}` run that command in the service cwd and read `reason`. Fix it and `restart --only <service>`. |
 | `manifest_runtime_mismatch: true` | The running process predates the current manifest. | `oberth restart --only <service>`. Do not kill by PID. |
+| `code_changed_since_start: true` | The source under `sources:` changed after this run started, so the process is still executing older code. `code_changed_files` is the count when known; `code_hint` names the restart. | `oberth restart --only <service>`, then re-read status and confirm the field is `false` before trusting an unchanged HTTP result. A missing field is unknown, not "unchanged". |
 | `machine:` entry `listening: false` | A read-only dependency is not listening. | Report the fact. `up`/`down` never operate `machine:` entries. If no declared service `depends_on` it, stop here; there is nothing to hand off. |
 | `outside_home` | The worktree is outside `HOME` and was not allowed. | Ask the person; `--allow-outside-home` is their decision, not a default fix. |
 

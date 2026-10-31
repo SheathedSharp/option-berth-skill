@@ -70,9 +70,9 @@ Read the detailed guide only for the mode the task needs:
 - Service start, stop, restart, logs, status reporting, a failed start, an
   observation/sandbox error, or worktree identity and cleanup:
   [references/operations.md](references/operations.md).
-- Manifest drafting, adoption, `prepare:` / `prepare_inputs:`, `env_file:`,
-  health checks, ports and references such as `${worktree}`, `machine:`, or
-  `workspace:` [references/manifest.md](references/manifest.md).
+- Manifest drafting, adoption, `prepare:` / `prepare_inputs:`, `sources:`,
+  `env_file:`, health checks, ports and references such as `${worktree}`,
+  `machine:`, or `workspace:` [references/manifest.md](references/manifest.md).
 - What work has been done in this worktree, or which workplace new work belongs
   to: [references/workplace.md](references/workplace.md).
 - Explicitly related worktrees or repositories:

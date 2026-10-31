@@ -26,6 +26,7 @@ Each entry in `services`:
 | `cwd` | Working directory, relative to the directory holding `oberth.yaml`. | `start_failed` when it is unusable. |
 | `prepare` | A command that runs before `cmd` on `up` and `restart`; its failure prevents the long-lived start. Use it when the artifact must be rebuilt from this checkout (a jar, generated config, code generation). | A prepare failure; a stale or missing generated artifact. |
 | `prepare_inputs` | Files the prepare command reads, relative to `cwd`. When their contents are unchanged, `up` skips prepare. | A prepare that reruns unnecessarily, or a stale result when the inputs are not declared. |
+| `sources` | Files or directories whose contents identify the code this run is executing, relative to `cwd`. Omitted means `cwd`; `sources: []` opts a self-reloading service out. | `code_changed_since_start: true`; the running process is older than the source on disk. |
 | `port` | A fixed number from 1–65535, or `auto`. `status` reports the running address as `port_actual`. | `port_occupied`; an auto port that is not yet assigned. |
 | `health` | An HTTP path, `{tcp: port}`, or `{command: ...}`. `up --wait` and dependency waits use it. | `health_status: fail`, `ready_timeout`, and a dependency that never becomes ready. |
 | `depends_on` | Declared services that must be started first; a portless dependency is ready when its run is active, a ported one when it listens (and is healthy when declared). | `dependency_not_ready`, `dependency_timeout`. |
@@ -170,6 +171,27 @@ prepare_inputs: [package.json, package-lock.json]
   records a fingerprint.
 - The cache lives under `$BERTH_HOME/prepare`. Deleting it only makes the next
   start slower; it is not a source of truth about the service.
+
+## `sources` and the running code
+
+`sources` declares what counts as this service's code:
+
+```yaml
+sources: [src, go.mod]   # relative to cwd
+sources: []              # do not check; the service reloads its own code
+```
+
+- The key is omitted in most manifests. Omitted means the service `cwd`.
+- At start, option-berth records a content fingerprint of these paths and the
+  checkout's HEAD. In a Git checkout the file set is tracked files plus
+  untracked files Git does not ignore, so `node_modules`, `target`, and `dist`
+  do not enter it even when named in `sources:` — they are usually artifacts
+  built from the sources. Outside a checkout a fixed ignore list applies.
+- `status` recomputes the fingerprint for running services. A missing
+  `code_changed_since_start` means **unknown** (an older run, a deleted
+  snapshot, or unreadable sources), not "unchanged".
+- `code_changed_files` is exact only when the per-file snapshot was kept; a
+  very large source set may answer the boolean without a count.
 
 ## Draft and adopt
 
