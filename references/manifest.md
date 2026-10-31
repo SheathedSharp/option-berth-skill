@@ -191,6 +191,9 @@ sources: []              # do not check; the service reloads its own code
   path. Symlinks deeper inside a directory are recorded as links and are not
   followed. This keeps the answer honest instead of reporting a linked tree as
   unchanged.
+- Services that default to the same tree (for example, both default to one
+  repository root) report a change together. Declare each service's real
+  `sources:` when only one of them should be restarted.
 - `status` recomputes the fingerprint for running services. A missing
   `code_changed_since_start` means **unknown** (an older run, a deleted
   snapshot, or unreadable sources), not "unchanged".
