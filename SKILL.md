@@ -2,7 +2,7 @@
 name: option-berth
 description: Use oberth to inspect and operate services for the current worktree, read the engine's failure reason and next step, tell a trustworthy listener observation from a sandbox limitation, and observe explicitly related local worktrees during parallel development.
 metadata:
-  version: "0.7.0"
+  version: "0.7.1"
   source: "github.com/SheathedSharp/option-berth"
 ---
 
@@ -39,10 +39,13 @@ For a service task, the default loop is:
 
 1. Read `status --json`, the declared services, and `observation`.
 2. Run the operation: `oberth up --wait --json`,
-   `oberth restart --only <service> --json`, or `oberth down --json`.
+   `oberth restart --only <service> --json`, or `oberth down --json`. A
+   `started` service with `services[].ready: false` is not confirmed ready; it
+   is not a failure.
 3. On failure, match `last_exit.reason` and `health_status` against the table in
-   [references/operations.md](references/operations.md), and read the log the
-   reason names.
+   [references/operations.md](references/operations.md), read the log the
+   reason names, and report `last_exit.port_holder` or `exits[].hint` when they
+   are present.
 4. If the command itself returned an `observation_*` code, it is a fact about
    this process, not a service `last_exit.reason`. Follow the observation and
    sandbox section instead of the exit table.

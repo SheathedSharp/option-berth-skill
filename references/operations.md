@@ -71,15 +71,16 @@ exist.
 ## Failure reasons and next steps
 
 `status.worktree.services[]` publishes the evidence to branch on:
-`last_exit.reason` (and its exit code), `health_status` (with `status`, `code`,
-`reason`, `observed_at`), `log_path`, and `manifest_runtime_mismatch`. Read
-those fields before choosing a next step.
+`last_exit.reason` (and its exit code), `last_exit.port_hint` /
+`last_exit.port_holder` for a port conflict, `health_status` (with `status`,
+`code`, `reason`, `observed_at`), `log_path`, and
+`manifest_runtime_mismatch`. Read those fields before choosing a next step.
 
 | Evidence | Meaning | Next step |
 |---|---|---|
 | `start_failed` | The command could not be started (missing executable, unusable cwd, or outside the home boundary). | Check `cmd` and `cwd`. There is no process log because no process ran. For `outside_home`, pass `--allow-outside-home` only when the person asks; otherwise report the refusal and its hint. |
 | `crashed` (non-zero exit) | The process ran and exited; the cause is in its output. | `oberth logs <service> --once --json`, fix the generated file, data, or command it names, then `up` again. |
-| `port_occupied` | The declared fixed port is owned by another process. | Do not kill an unrelated process and do not edit `oberth.yaml` to dodge it. Report the port, the listener evidence, and let the person decide whether to free the port or change the manifest. |
+| `port_occupied` | The declared fixed port is owned by another process. `last_exit.port_holder` names the process observed at read time. | Do not kill an unrelated process and do not edit `oberth.yaml` to dodge it. Report the port, `last_exit.port_holder`, and let the person decide whether to free the port or change the manifest. |
 | `ready_timeout` | The process started but did not listen or pass `health:` before the deadline. | Read its log; check the bind address, port, and health declaration. Fix the input, then `restart --only <service>`. An already-running instance is not stopped by this timeout. |
 | `dependency_not_ready` / `dependency_timeout` | A declared `depends_on` dependency did not resolve or become ready. | Read the **dependency's** log (`oberth logs <dependency> --once --json`), fix the dependency first, then `up` the dependent. The failure hint names the dependency. |
 | `stopped` / `exited` (code 0) | Normal stop or clean exit, not a failure. | Report the state; do not "recover" it. |
@@ -102,6 +103,32 @@ Rules for using the table:
   failed. A named `kill` still needs the existing approval boundary.
 - After a fix, use `up --wait`, refresh status, and report the observed facts
   rather than "it should work now".
+
+`last_exit.port_holder` has `port`, `pid`, `command`, and `kind`; a managed run
+adds `group`, `name`, and `run_id`, and a readable row can add `cwd` and
+`bind_address`. `kind` is `oberth_run` (started by option-berth, possibly in
+another worktree), `previous_run` (an earlier generation of this service),
+`worktree_listener` (attributed to a worktree without a managed run), or
+`unknown`. It only covers the failed service's own port, not the machine's port
+table. When the holder has released the port or cannot be observed, the field
+is absent: that means "not observed at read time", not "the port is free".
+`up --json` publishes the same `services[].port_holder` shape for a
+`port_occupied` attempt.
+
+`status --json` also publishes `exits[]`, the last five ended runs newest
+first; it is history, not the current failure set. Use
+`worktree.services[].last_exit` for the current facts. A failure record can
+carry `exits[].hint`, the deterministic next step (the same hint as
+`groups.start`), present only when a log file exists. `exits[].ports` lists
+ports the ended run still held, so an exited run usually has an empty array.
+
+`up --json` and `restart --json` publish `services[].ready` as a CLI
+annotation, not a daemon fact. With `--wait`, it is `true` only after the
+listener (and any declared `health:`) is confirmed; without waiting, a
+`started` service carries `false`, and `skipped` / `failed` omit the field.
+`restart` never waits, so its `started` services are always `ready: false`.
+`false` means "readiness not confirmed", not failure: branch on `state` and
+`reason`.
 
 ## Command errors
 
