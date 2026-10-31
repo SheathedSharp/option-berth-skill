@@ -7,8 +7,11 @@ guide for "start it and tell me why it is not running".
 ## Core loop
 
 1. Read `oberth status --json`: declared services, `running`, `port_actual`,
-   `health_status`, `last_exit`, the attributed listeners, and the top-level
-   `observation`.
+   `health_status`, `last_exit`, `code_changed_since_start`, the attributed
+   listeners, and the top-level `observation`. For a large stack,
+   `status --json --brief` keeps the runtime facts (including the code-change
+   fields) and drops manifest copies, git history and the change ledger;
+   `--only api,worker` also narrows which services are read and hashed.
 2. Run the operation:
    `oberth up --wait --json` for the project, `oberth up --only api,worker --json`
    for part of it, `oberth restart --only api --json` to re-apply the current
