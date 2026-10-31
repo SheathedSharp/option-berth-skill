@@ -187,6 +187,10 @@ sources: []              # do not check; the service reloads its own code
   untracked files Git does not ignore, so `node_modules`, `target`, and `dist`
   do not enter it even when named in `sources:` — they are usually artifacts
   built from the sources. Outside a checkout a fixed ignore list applies.
+- A declared source must not be reached through a symlink; name the target
+  path. Symlinks deeper inside a directory are recorded as links and are not
+  followed. This keeps the answer honest instead of reporting a linked tree as
+  unchanged.
 - `status` recomputes the fingerprint for running services. A missing
   `code_changed_since_start` means **unknown** (an older run, a deleted
   snapshot, or unreadable sources), not "unchanged".
