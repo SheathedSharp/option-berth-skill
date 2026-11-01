@@ -16,7 +16,7 @@ that no declared service `depends_on`, for a normally stopped service, or on
 every status read merely because `attention_path` exists.
 
 The complete adapter contract is in
-[`docs/jev-adapter.md`](https://github.com/SheathedSharp/option-berth/blob/main/docs/jev-adapter.md).
+[`docs/agent/jev-adapter.md`](https://github.com/SheathedSharp/option-berth/blob/main/docs/agent/jev-adapter.md).
 
 ## Verify before acting
 
@@ -112,5 +112,5 @@ means there are not enough labeled cases. Read `labeled_cases`,
 with no events or from no session being started at all.
 
 The runner's fixed vocabulary, preflight rules, settings, and exact feedback
-schema are maintained in `docs/jev-adapter.md`; read that document before
+schema are maintained in `docs/agent/jev-adapter.md`; read that document before
 changing or evaluating those interfaces.
