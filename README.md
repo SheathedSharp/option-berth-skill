@@ -74,7 +74,8 @@ ln -sfn "$PWD/option-berth-skill" ~/.claude/skills/option-berth
 
 契约以引擎仓库为准：[CLI](https://github.com/SheathedSharp/option-berth/blob/main/docs/cli.md)、
 [清单](https://github.com/SheathedSharp/option-berth/blob/main/docs/cli.md)、
-[产品边界](https://github.com/SheathedSharp/option-berth/blob/main/docs/product.md)。
+[产品边界](https://github.com/SheathedSharp/option-berth/blob/main/docs/product.md)、
+[工作记录](https://github.com/SheathedSharp/option-berth/blob/main/docs/workplace.md)。
 
 ## 许可证
 
