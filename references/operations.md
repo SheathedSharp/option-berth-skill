@@ -1,36 +1,44 @@
 # Service operations
 
-Use this guide after the initial `oberth status --json` when the task concerns
-service lifecycle, status reporting, or a start that failed. It is the default
-guide for "start it and tell me why it is not running".
+Use this guide after the initial `oberth status --json --brief` when the task
+concerns service lifecycle, status reporting, or a start that failed. It is the
+default guide for "start it and tell me why it is not running".
 
 ## Core loop
 
-1. Read `oberth status --json`: declared services, `running`, `port_actual`,
-   `health_status`, `last_exit`, `code_changed_since_start`, the attributed
-   listeners, and the top-level `observation`. A service that is still coming
-   up carries `services[].starting` with `starting.phase` (`waiting_dependency`,
+1. Read `oberth status --json --brief`: the declared services, `running`,
+   `port_actual`, `health_status`, the current exit reason and code,
+   `code_changed_since_start`, the attributed listeners, and the top-level
+   `observation`. A service that is still coming up carries
+   `services[].starting` with `starting.phase` (`waiting_dependency`,
    `prepare`, `spawning`), `starting.waiting_on`, `starting.elapsed_ms`,
    `starting.ready_timeout` and `starting.last_prepare_ms`. That is an
    in-flight attempt, not a run: it does not count as `running`, so do not
    report it as started and do not wait on it outside `up --wait`.
-   For a large stack, `status --json --brief` keeps the runtime facts
-   (including the code-change fields and `starting`) and drops manifest copies,
-   git history and the change ledger; `--only api,worker` also narrows which
-   services are read and hashed.
+   `--only api,worker` narrows which services are read and hashed.
 2. Run the operation:
    `oberth up --wait --json` for the project, `oberth up --only api,worker --json`
    for part of it, `oberth restart --only api --json` to re-apply the current
    manifest to one service, or `oberth down --json` to stop the project.
 3. If it failed, match the evidence in the table below and read the log the
-   reason names. Do not retry the same command without changing the input.
+   reason names. `oberth logs <service> --once --json --run current
+   --first-error` returns the first line of this run that matches the fixed
+   error vocabulary, which is often the whole answer. Do not retry the same
+   command without changing the input.
 4. If the error code starts with `observation_`, stop and use
    [Observation and agent sandboxes](#observation-and-agent-sandboxes). That is
    a limitation of this process, not a service failure and not a reason to
    change the manifest.
-5. Fix the declared input, repeat the operation, and refresh `status --json`.
+5. Fix the declared input, repeat the operation, and refresh
+   `status --json --brief`.
 6. Report the worktree path and branch, declared services and states, attributed
    runtime facts, the last failure evidence, and the next bounded command.
+
+The full `oberth status --json` is a different read, not a bigger default: it
+adds the manifest copies, the git summary, `drafts[]`, `changed` and
+`attention_path`. Read it when the task is about one of those — which draft is
+waiting to be adopted, what changed since the last read, the repository
+summary, or the attention handoff — and stay on the brief document otherwise.
 
 Use `up --wait` (or `--ready`) when readiness matters. It waits for listeners
 and configured health checks; a portless worker is ready when its run is active.
@@ -92,13 +100,15 @@ differ, the process is running an older declaration and a restart re-applies
 the current one. `code_head` is the commit the run started from; it is absent
 outside a Git checkout, which means unknown, not "no change".
 
-The brief view names the same failure as `services[].exit_reason` and
-`services[].exit_code` instead of `last_exit.*`. Read one shape, not both.
+In the brief view the same failure is `services[].exit_reason` and
+`services[].exit_code`, and the next step is `services[].hint`; the
+`last_exit.*` and `exits[]` shapes belong to the full document. Read one shape,
+not both.
 
 | Evidence | Meaning | Next step |
 |---|---|---|
 | `start_failed` | The command could not be started (missing executable, unusable cwd, or outside the home boundary). | Check `cmd` and `cwd`. There is no process log because no process ran. For `outside_home`, pass `--allow-outside-home` only when the person asks; otherwise report the refusal and its hint. |
-| `crashed` (non-zero exit) | The process ran and exited; the cause is in its output. | `oberth logs <service> --once --json`, fix the generated file, data, or command it names, then `up` again. |
+| `crashed` (non-zero exit) | The process ran and exited; the cause is in its output. | `oberth logs <service> --once --json --run current --first-error`, fix the generated file, data, or command the line names, then `up` again. |
 | `port_occupied` | The declared fixed port is owned by another process. `last_exit.port_holder` names the process observed at read time. | Do not kill an unrelated process and do not edit `oberth.yaml` to dodge it. Report the port, `last_exit.port_holder`, and let the person decide whether to free the port or change the manifest. |
 | `ready_timeout` | The process started but did not listen or pass `health:` before the deadline. | Read its log; check the bind address, port, and health declaration. Fix the input, then `restart --only <service>`. An already-running instance is not stopped by this timeout. |
 | `dependency_not_ready` / `dependency_timeout` | A declared `depends_on` dependency did not resolve or become ready. | Read the **dependency's** log (`oberth logs <dependency> --once --json`), fix the dependency first, then `up` the dependent. The failure hint names the dependency. |
@@ -121,8 +131,8 @@ Rules for using the table:
   a human choice; see [manifest.md](manifest.md).
 - Do not kill by PID or port unless it is this project's own service and `down`
   failed. A named `kill` still needs the existing approval boundary.
-- After a fix, use `up --wait`, refresh status, and report the observed facts
-  rather than "it should work now".
+- After a fix, use `up --wait`, refresh `status --json --brief`, and report the
+  observed facts rather than "it should work now".
 
 `last_exit.port_holder` has `port`, `pid`, `command`, and `kind`; a managed run
 adds `group`, `name`, and `run_id`, and a readable row can add `cwd` and
@@ -178,8 +188,8 @@ stable codes are:
 | `not_found` | The named worktree, service, port, or record does not exist. Do not widen the search to the whole machine. |
 | `ambiguous` | The selector matched more than one target. Narrow it with a name, `--ip`, or a full id. |
 | `permission_denied` | The operating system refused the action. Report it and the hint; do not retry blindly. |
-| `timeout` | The operation did not finish in time. Refresh `status --json` before assuming it had no effect. |
-| `daemon_busy` | Another writer holds the state. Refresh `status --json`, then retry once. |
+| `timeout` | The operation did not finish in time. Refresh `status --json --brief` before assuming it had no effect. |
+| `daemon_busy` | Another writer holds the state. Refresh `status --json --brief`, then retry once. |
 | `internal` | An unexpected engine failure. Report `detail` and `hint`; do not translate it into a service failure. |
 | `observation_empty` / `observation_unrecognized` / `observation_incomplete` / `observation_blind` / `observation_bind_denied` | This process cannot produce a trustworthy listener table. See the next section. |
 
@@ -188,7 +198,7 @@ the manifest is wrong.
 
 ## Observation and agent sandboxes
 
-`status --json` can publish a top-level `observation`:
+`status --json --brief` and the full `status --json` both publish the same top-level `observation`:
 
 ~~~json
 {"state":"bind_denied","code":"observation_bind_denied",

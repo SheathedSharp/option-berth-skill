@@ -2,7 +2,7 @@
 name: option-berth
 description: Use oberth to inspect and operate services for the current worktree, read the engine's failure reason and next step, tell a trustworthy listener observation from a sandbox limitation, and observe explicitly related local worktrees during parallel development.
 metadata:
-  version: "0.7.1"
+  version: "0.8.0"
   source: "github.com/SheathedSharp/option-berth"
 ---
 
@@ -22,41 +22,54 @@ runtime — and `oberth --help` shows the same grouping.
 Read the current worktree before reasoning about services:
 
 ~~~sh
-oberth status --json
+oberth status --json --brief
 ~~~
 
-This gives the declaration, service runs, listeners attributed to the worktree,
-branch and dirty counts, recent exits, any pending manifest draft, and — when
-the listener table cannot be trusted — the top-level `observation`. Do not turn
-it into a question about every port on the machine.
+The brief document is the runtime facts: service states, declared and actual
+ports, `health_status`, the current exit reason and next step, the code-change
+fields, in-flight `starting`, and — when the listener table cannot be trusted —
+the top-level `observation`. It leaves out the manifest copies, the git
+summary, the change ledger and the attention handoff, which are most of a full
+`status --json`. Narrow it further with `--only api,worker` when the task is
+about named services.
 
 Read `observation` before you use `ports`: `ports: []` together with
 `observation.state: blind` or `bind_denied` means this process cannot see
 listeners, not that nothing is running. The observation section of
 [references/operations.md](references/operations.md) says what to do next.
 
+Go to the full `oberth status --json` only when the brief document cannot
+answer the question: which manifest draft is pending, what changed since the
+last read, what the repository summary is, or the attention handoff. Reading it
+first costs the context the brief read saves.
+
 For a service task, the default loop is:
 
-1. Read `status --json`, the declared services, and `observation`.
+1. Read `status --json --brief`, the declared services, and `observation`.
 2. Run the operation: `oberth up --wait --json`,
    `oberth restart --only <service> --json`, or `oberth down --json`. A
    `started` service with `services[].ready: false` is not confirmed ready; it
    is not a failure.
-3. On failure, match `last_exit.reason` and `health_status` against the table in
-   [references/operations.md](references/operations.md), read the log the
-   reason names, and report `last_exit.port_holder` or `exits[].hint` when they
-   are present.
+3. On failure, match `services[].exit_reason` and `health_status` against the
+   table in [references/operations.md](references/operations.md), read the log
+   the reason names, and report `services[].hint` when it is present. The same
+   evidence is `oberth logs <service> --once --json --run current
+   --first-error`, which returns the first matching line of this run instead of
+   the whole file.
 4. If the command itself returned an `observation_*` code, it is a fact about
-   this process, not a service `last_exit.reason`. Follow the observation and
+   this process, not a service exit reason. Follow the observation and
    sandbox section instead of the exit table.
-5. Fix the declared input, repeat the operation, and refresh `status --json`.
+5. Fix the declared input, repeat the operation, and refresh
+   `status --json --brief`.
 
-`attention_path` is optional context, not a required branch after `status`.
-Read [references/attention.md](references/attention.md) only when the task is
-explicitly about Jev, quality feedback, or human handoff, or when the current
-anomaly blocks the task and a person must choose among the fixed options. A
-`machine:` entry that no declared service `depends_on` is a read-only fact:
-report its `listening` value; do not hand it off, arm a session, or start it.
+`attention_path` is optional context, not a required branch after `status`, and
+the brief read does not carry it at all. Read
+[references/attention.md](references/attention.md) only when the task is
+explicitly about Jev, quality feedback, or human handoff, or when the full
+`status --json` published an `attention_path` and the current anomaly blocks the
+task and a person must choose among the fixed options. A `machine:` entry that
+no declared service `depends_on` is a read-only fact: report its `listening`
+value; do not hand it off, arm a session, or start it.
 
 For code changes, read the worktree-scoped Git summary as well:
 
@@ -105,8 +118,8 @@ Read the detailed guide only for the mode the task needs:
   product model. Do not answer the whole-machine port-radar question.
 - Do not arm a task-scoped attention session by default. Arm it only when the
   person explicitly asks for continuous attention on a long-running task.
-- Refresh `oberth status --json` after a control command and before acting on a
-  derived attention request.
+- Refresh `oberth status --json --brief` after a control command, and the full
+  `oberth status --json` before acting on a derived attention request.
 
 The detailed guides are part of this skill's distribution. Read only the guide
 needed for the current task; do not load all references by default.
