@@ -8,10 +8,16 @@ guide for "start it and tell me why it is not running".
 
 1. Read `oberth status --json`: declared services, `running`, `port_actual`,
    `health_status`, `last_exit`, `code_changed_since_start`, the attributed
-   listeners, and the top-level `observation`. For a large stack,
-   `status --json --brief` keeps the runtime facts (including the code-change
-   fields) and drops manifest copies, git history and the change ledger;
-   `--only api,worker` also narrows which services are read and hashed.
+   listeners, and the top-level `observation`. A service that is still coming
+   up carries `services[].starting` with `starting.phase` (`waiting_dependency`,
+   `prepare`, `spawning`), `starting.waiting_on`, `starting.elapsed_ms`,
+   `starting.ready_timeout` and `starting.last_prepare_ms`. That is an
+   in-flight attempt, not a run: it does not count as `running`, so do not
+   report it as started and do not wait on it outside `up --wait`.
+   For a large stack, `status --json --brief` keeps the runtime facts
+   (including the code-change fields and `starting`) and drops manifest copies,
+   git history and the change ledger; `--only api,worker` also narrows which
+   services are read and hashed.
 2. Run the operation:
    `oberth up --wait --json` for the project, `oberth up --only api,worker --json`
    for part of it, `oberth restart --only api --json` to re-apply the current
@@ -76,9 +82,18 @@ exist.
 `status.worktree.services[]` publishes the evidence to branch on:
 `last_exit.reason` (and its exit code), `last_exit.port_hint` /
 `last_exit.port_holder` for a port conflict, `health_status` (with `status`,
-`code`, `reason`, `observed_at`), `log_path`, `manifest_runtime_mismatch`, and
-`code_changed_since_start` (with `code_changed_files` and `code_hint`). Read
-those fields before choosing a next step.
+`code`, `reason`, `observed_at`), `log_path`, `manifest_hash` /
+`runtime_spec_hash`, `manifest_runtime_mismatch`, and
+`code_changed_since_start` (with `code_changed_files`, `code_hint` and
+`code_head`). Read those fields before choosing a next step.
+
+`manifest_hash` and `runtime_spec_hash` are fingerprints, not paths: when they
+differ, the process is running an older declaration and a restart re-applies
+the current one. `code_head` is the commit the run started from; it is absent
+outside a Git checkout, which means unknown, not "no change".
+
+The brief view names the same failure as `services[].exit_reason` and
+`services[].exit_code` instead of `last_exit.*`. Read one shape, not both.
 
 | Evidence | Meaning | Next step |
 |---|---|---|
@@ -134,6 +149,21 @@ listener (and any declared `health:`) is confirmed; without waiting, a
 `restart` never waits, so its `started` services are always `ready: false`.
 `false` means "readiness not confirmed", not failure: branch on `state` and
 `reason`.
+
+## Resources and start budgets
+
+A running service can publish `stats` (`cpu_percent`, `memory_rss_bytes`,
+`thread_count`, `uptime`, `state`, `connections`). A listenerless worker gets
+its root process's sample too, so a missing `stats` means **unknown**, not zero.
+`worktree.resources` summarizes the services that have samples
+(`cpu_percent`, `memory_rss_bytes`, and `services` as the contributing count);
+it is absent when nothing has a sample, and `services` may be smaller than
+`worktree.running_services`. Do not report "0% CPU" from an absent field.
+
+Waiting for readiness uses each service's own `ready_timeout`; a dependency
+waits on the largest budget among the dependencies it declares, not on its own.
+When `up --wait` gives up, the started run is stopped and recorded as
+`ready_timeout`; an already-running instance is never stopped by this timeout.
 
 ## Command errors
 
