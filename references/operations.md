@@ -116,7 +116,7 @@ not both.
 | `health_status: fail` (with `code`/`reason`) | A listener exists but the declared health probe failed. | Read the log; for an HTTP path check the route, for `{tcp: port}` confirm the port matches the declared `port`, for `{command: ...}` run that command in the service cwd and read `reason`. Fix it and `restart --only <service>`. |
 | `manifest_runtime_mismatch: true` | The running process predates the current manifest. | `oberth restart --only <service>`. Do not kill by PID. |
 | `code_changed_since_start: true` | The source under `sources:` changed after this run started, so the process is still executing older code. `code_changed_files` is the count when known; `code_hint` names the restart. | `oberth restart --only <service>`, then re-read status and confirm the field is `false` before trusting an unchanged HTTP result. A missing field is unknown, not "unchanged". |
-| `machine:` entry `listening: false` | A read-only dependency is not listening. | Report the fact. `up`/`down` never operate `machine:` entries. If no declared service `depends_on` it, stop here; there is nothing to hand off. |
+| `machine:` entry `listening: false` | A read-only dependency is not listening. Check `machine[].listening_known` first: `false` means the table cannot see the port's owner, so report unknown; only `true` makes the absence a fact. | Report the fact, or the unknown. `up`/`down` never operate `machine:` entries. If no declared service `depends_on` it, stop here; there is nothing to hand off. |
 | `outside_home` | The worktree is outside `HOME` and was not allowed. | Ask the person; `--allow-outside-home` is their decision, not a default fix. |
 
 Rules for using the table:
@@ -213,6 +213,20 @@ Read it before treating `ports` as complete. The fields mean:
 | `partial` | Some rows were unreadable. The published rows are facts; unreadable ports are unknown. | Use the published rows. Do not fill in or assume the missing ports. |
 | `blind` | The process can bind a port but cannot see its own listener. | An empty listener list is not evidence that nothing runs. Move the check outside the sandbox. |
 | `bind_denied` | The process cannot bind a local port at all. | Services started from this process cannot listen either. Move the check outside the sandbox. |
+
+On macOS 27 the collector may fall back to `lsof`. That round is still
+`observable` for this process's own listener, and it names the collector in
+`observation.source`:
+
+~~~json
+{"state":"observable","source":"lsof","detail":"...","checked_at":"..."}
+~~~
+
+A non-empty `observation.source` means the table is narrow: it cannot see
+sockets owned by other users, so a port missing from it is unknown, not free.
+Do not report a `machine:` dependency as down from absence in that round. Read
+`machine[].listening_known`: `false` means unknown; `true` with
+`listening: false` means the absence was observed.
 
 The matching stable error codes appear in command errors, `up --wait`, `logs`,
 and `doctor`:

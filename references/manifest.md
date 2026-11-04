@@ -272,7 +272,9 @@ It is generated from the Go declaration types; do not edit it by hand.
   whether its service is running. `port: auto` without a running service cannot
   be addressed; start that service or give it a fixed port. Do not add a
   `depends_on` relation or copy the other address into this manifest.
-- **Unreferenced `machine:` entry.** Its `listening` value is the whole story.
+- **Unreferenced `machine:` entry.** Its `listening` value is the whole story
+  when `machine[].listening_known` is `true`. `false` means the collector cannot
+  see that port's owner (the macOS 27 `lsof` fallback); report unknown, not down.
   It has no start/stop operation and does not need a handoff.
 - **An `observation_*` error, not a manifest problem.** The manifest was read
   successfully; this process cannot see listeners. Do not change the manifest
