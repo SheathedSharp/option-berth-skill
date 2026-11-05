@@ -2,7 +2,7 @@
 name: option-berth
 description: Use oberth to inspect and operate services for the current worktree, read the engine's failure reason and next step, tell a trustworthy listener observation from a sandbox limitation, and observe explicitly related local worktrees during parallel development.
 metadata:
-  version: "0.8.0"
+  version: "0.8.1"
   source: "github.com/SheathedSharp/option-berth"
 ---
 
@@ -69,7 +69,9 @@ explicitly about Jev, quality feedback, or human handoff, or when the full
 `status --json` published an `attention_path` and the current anomaly blocks the
 task and a person must choose among the fixed options. A `machine:` entry that
 no declared service `depends_on` is a read-only fact: report its `listening`
-value; do not hand it off, arm a session, or start it.
+value, and check `machine[].listening_known` — `false` means the listener table
+cannot see that port's owner, so say unknown rather than down; do not hand it
+off, arm a session, or start it.
 
 For code changes, read the worktree-scoped Git summary as well:
 
