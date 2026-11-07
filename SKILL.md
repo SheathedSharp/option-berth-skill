@@ -2,7 +2,7 @@
 name: option-berth
 description: Use oberth to inspect and operate services for the current worktree, read the engine's failure reason and next step, tell a trustworthy listener observation from a sandbox limitation, and observe explicitly related local worktrees during parallel development.
 metadata:
-  version: "0.8.1"
+  version: "0.9.0"
   source: "github.com/SheathedSharp/option-berth"
 ---
 
@@ -94,6 +94,25 @@ Read the detailed guide only for the mode the task needs:
   [references/cross-worktree.md](references/cross-worktree.md).
 - `attention_path`, Jev, human-in-the-loop, or quality feedback (optional):
   [references/attention.md](references/attention.md).
+- Oberth itself got in the way — a command hung, a read was far slower than its
+  work, the published facts could not tell two states apart, a hint did not
+  match, or an observation code survived the documented next step:
+  [references/feedback.md](references/feedback.md).
+
+## When oberth itself gets in the way
+
+The loop above assumes the facts arrive. When they do not, say so to the person
+first and then — only if this installation agreed — file one improvement report
+about the engine, not about the project:
+
+~~~sh
+oberth feedback status --json
+oberth feedback report --kind stalled --command up --elapsed 3m --dry-run
+~~~
+
+A failure already explained by `exit_reason`, `health_status` or the operation
+table is not a report. The fixed kinds, the flags, the note rule and the exact
+steps are in [references/feedback.md](references/feedback.md).
 
 ## Boundaries
 
@@ -118,6 +137,9 @@ Read the detailed guide only for the mode the task needs:
   adoption is an explicit human choice. Do not edit it to hide a failure.
 - Do not write hooks, MCP registrations, agent configuration, or a second
   product model. Do not answer the whole-machine port-radar question.
+- A report is about oberth, not the project. Never put a path, service name, log
+  line, command line, manifest field, environment value, or credential in a
+  report note, and never enable reports on the person's behalf.
 - Do not arm a task-scoped attention session by default. Arm it only when the
   person explicitly asks for continuous attention on a long-running task.
 - Refresh `oberth status --json --brief` after a control command, and the full

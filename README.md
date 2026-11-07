@@ -70,7 +70,7 @@ ln -sfn "$PWD/option-berth-skill" ~/.claude/skills/option-berth
 - `references/` — 起停与失败原因、监听观察与沙箱、清单起草与采纳（含 `prepare_inputs`、
   `env_file`、`workspace` 地址、`health` 三种写法与 `${worktree}` 引用）、
   worktree 身份与清理、工作记录、跨 worktree 观察；attention 交接只在明确需要
-  人工选择时使用。
+  人工选择时使用；`oberth feedback` 的固定触发条件与步骤在可选的一节里。
 
 契约以引擎仓库为准：[CLI](https://github.com/SheathedSharp/option-berth/blob/main/docs/cli.md)、
 [清单](https://github.com/SheathedSharp/option-berth/blob/main/docs/cli.md)、
