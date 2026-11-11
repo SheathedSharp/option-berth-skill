@@ -28,7 +28,7 @@ Each entry in `services`:
 | `prepare_inputs` | Files the prepare command reads, relative to `cwd`. When their contents are unchanged, `up` skips prepare. | A prepare that reruns unnecessarily, or a stale result when the inputs are not declared. |
 | `sources` | Files or directories whose contents identify the code this run is executing, relative to `cwd`. Omitted means `cwd`; `sources: []` opts a self-reloading service out. | `code_changed_since_start: true`; the running process is older than the source on disk. |
 | `port` | A fixed number from 1–65535, or `auto`. `status` reports the running address as `port_actual`. | `port_occupied`; an auto port that is not yet assigned. |
-| `health` | An HTTP path, `{tcp: port}`, or `{command: ...}`. `up --wait` and dependency waits use it. | `health_status: fail`, `ready_timeout`, and a dependency that never becomes ready. |
+| `health` | An HTTP path, `{tcp: port}`, or `{command: ...}`. `up --wait` and dependency waits use it. | `health.status: fail` in the brief document, `health_status.status: fail` in the full one; `ready_timeout`; and a dependency that never becomes ready. |
 | `depends_on` | Declared services that must be started first; a portless dependency is ready when its run is active, a ported one when it listens (and is healthy when declared). | `dependency_not_ready`, `dependency_timeout`. |
 | `env` | Environment added when option-berth starts the service. Values may use the references below. | A service that starts with the wrong configuration. |
 | `env_file` | A dotenv-style file read before `prepare` and `cmd`; relative to the manifest directory. Its contents do not enter `status`, logs, or `spec_hash`. | A service that cannot start because the file is missing or malformed. |
@@ -60,8 +60,9 @@ health: {command: pg_isready -h 127.0.0.1 -p ${port}}
 - HTTP and TCP only prove the port is reachable. They do not prove the protocol
   behind it is ready.
 - The same health fact feeds `up --wait`, dependency waits, `status`
-  (`health_status`), and attention. A command-form check does not require the
-  service itself to listen.
+  (`health.status` in the brief document, `health_status` in the full one), and
+  attention. A command-form check does not require the service itself to
+  listen.
 
 ## References
 
