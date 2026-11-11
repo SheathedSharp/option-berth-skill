@@ -7,7 +7,7 @@ default guide for "start it and tell me why it is not running".
 ## Core loop
 
 1. Read `oberth status --json --brief`: the declared services, `running`,
-   `port_actual`, `health_status`, the current exit reason and code,
+   `port_actual`, `services[].health.status`, the current exit reason and code,
    `code_changed_since_start`, the attributed listeners, and the top-level
    `observation`. A service that is still coming up carries
    `services[].starting` with `starting.phase` (`waiting_dependency`,
@@ -87,7 +87,7 @@ exist.
 
 ## Failure reasons and next steps
 
-`status.worktree.services[]` publishes the evidence to branch on:
+The full `status --json` publishes the evidence under `worktree.services[]`:
 `last_exit.reason` (and its exit code), `last_exit.port_hint` /
 `last_exit.port_holder` for a port conflict, `health_status` (with `status`,
 `code`, `reason`, `observed_at`), `log_path`, `manifest_hash` /
@@ -101,9 +101,10 @@ the current one. `code_head` is the commit the run started from; it is absent
 outside a Git checkout, which means unknown, not "no change".
 
 In the brief view the same failure is `services[].exit_reason` and
-`services[].exit_code`, and the next step is `services[].hint`; the
-`last_exit.*` and `exits[]` shapes belong to the full document. Read one shape,
-not both.
+`services[].exit_code`, the health verdict is `services[].health.status` (the
+full document names it `health_status`), and the next step is
+`services[].hint`; the `last_exit.*` and `exits[]` shapes belong to the full
+document. Read one shape, not both.
 
 | Evidence | Meaning | Next step |
 |---|---|---|
@@ -113,7 +114,7 @@ not both.
 | `ready_timeout` | The process started but did not listen or pass `health:` before the deadline. | Read its log; check the bind address, port, and health declaration. Fix the input, then `restart --only <service>`. An already-running instance is not stopped by this timeout. |
 | `dependency_not_ready` / `dependency_timeout` | A declared `depends_on` dependency did not resolve or become ready. | Read the **dependency's** log (`oberth logs <dependency> --once --json`), fix the dependency first, then `up` the dependent. The failure hint names the dependency. |
 | `stopped` / `exited` (code 0) | Normal stop or clean exit, not a failure. | Report the state; do not "recover" it. |
-| `health_status: fail` (with `code`/`reason`) | A listener exists but the declared health probe failed. | Read the log; for an HTTP path check the route, for `{tcp: port}` confirm the port matches the declared `port`, for `{command: ...}` run that command in the service cwd and read `reason`. Fix it and `restart --only <service>`. |
+| `health_status.status: fail` in the full document, `health.status: fail` in the brief (with `code`/`reason`) | A listener exists but the declared health probe failed. | Read the log; for an HTTP path check the route, for `{tcp: port}` confirm the port matches the declared `port`, for `{command: ...}` run that command in the service cwd and read `reason`. Fix it and `restart --only <service>`. |
 | `manifest_runtime_mismatch: true` | The running process predates the current manifest. | `oberth restart --only <service>`. Do not kill by PID. |
 | `code_changed_since_start: true` | The source under `sources:` changed after this run started, so the process is still executing older code. `code_changed_files` is the count when known; `code_hint` names the restart. | `oberth restart --only <service>`, then re-read status and confirm the field is `false` before trusting an unchanged HTTP result. A missing field is unknown, not "unchanged". |
 | `machine:` entry `listening: false` | A read-only dependency is not listening. Check `machine[].listening_known` first: `false` means the table cannot see the port's owner, so report unknown; only `true` makes the absence a fact. | Report the fact, or the unknown. `up`/`down` never operate `machine:` entries. If no declared service `depends_on` it, stop here; there is nothing to hand off. |

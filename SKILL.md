@@ -2,7 +2,7 @@
 name: option-berth
 description: Use oberth to inspect and operate services for the current worktree, read the engine's failure reason and next step, tell a trustworthy listener observation from a sandbox limitation, and observe explicitly related local worktrees during parallel development.
 metadata:
-  version: "0.9.0"
+  version: "0.9.1"
   source: "github.com/SheathedSharp/option-berth"
 ---
 
@@ -26,12 +26,13 @@ oberth status --json --brief
 ~~~
 
 The brief document is the runtime facts: service states, declared and actual
-ports, `health_status`, the current exit reason and next step, the code-change
-fields, in-flight `starting`, and — when the listener table cannot be trusted —
-the top-level `observation`. It leaves out the manifest copies, the git
-summary, the change ledger and the attention handoff, which are most of a full
-`status --json`. Narrow it further with `--only api,worker` when the task is
-about named services.
+ports, `services[].health.status` (the full document's `health_status`), the
+current exit reason and next step, the code-change fields, in-flight
+`starting`, and — when the listener table cannot be trusted — the top-level
+`observation`. It leaves out the manifest copies, the git summary, the change
+ledger and the attention handoff, which are most of a full `status --json`.
+Narrow it further with `--only api,worker` when the task is about named
+services.
 
 Read `observation` before you use `ports`: `ports: []` together with
 `observation.state: blind` or `bind_denied` means this process cannot see
@@ -50,12 +51,12 @@ For a service task, the default loop is:
    `oberth restart --only <service> --json`, or `oberth down --json`. A
    `started` service with `services[].ready: false` is not confirmed ready; it
    is not a failure.
-3. On failure, match `services[].exit_reason` and `health_status` against the
-   table in [references/operations.md](references/operations.md), read the log
-   the reason names, and report `services[].hint` when it is present. The same
-   evidence is `oberth logs <service> --once --json --run current
-   --first-error`, which returns the first matching line of this run instead of
-   the whole file.
+3. On failure, match `services[].exit_reason` and `services[].health.status`
+   against the table in [references/operations.md](references/operations.md),
+   read the log the reason names, and report `services[].hint` when it is
+   present. The same evidence is `oberth logs <service> --once --json --run
+   current --first-error`, which returns the first matching line of this run
+   instead of the whole file.
 4. If the command itself returned an `observation_*` code, it is a fact about
    this process, not a service exit reason. Follow the observation and
    sandbox section instead of the exit table.
@@ -110,9 +111,9 @@ oberth feedback status --json
 oberth feedback report --kind stalled --command up --elapsed 3m --dry-run
 ~~~
 
-A failure already explained by `exit_reason`, `health_status` or the operation
-table is not a report. The fixed kinds, the flags, the note rule and the exact
-steps are in [references/feedback.md](references/feedback.md).
+A failure already explained by `exit_reason`, `services[].health.status` or the
+operation table is not a report. The fixed kinds, the flags, the note rule and
+the exact steps are in [references/feedback.md](references/feedback.md).
 
 ## Boundaries
 
