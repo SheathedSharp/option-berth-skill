@@ -50,9 +50,9 @@ or free. See [operations.md](operations.md).
 A change can report a failure kind such as `service_failed`. On one, refresh the
 current worktree status and use [operations.md](operations.md) to read the
 reason and next step. If the change blocks the task and status publishes
-`attention_path`, read [attention.md](attention.md) only for that decision; do
+`attn_path`, read [attention.md](attention.md) only for that decision; do
 not follow an artifact merely because it exists. Arm a task-scoped
-`jev-attention --session` runner only when the person asks for continuous
+`oberth attn session` runner only when the person asks for continuous
 attention. The runner watches the same handoffs and records local quality
 telemetry without starting, stopping, or restarting a service.
 
