@@ -50,7 +50,7 @@ this task is and which of the fixed options it may present. For a short task,
 pass it inline:
 
 ```sh
-oberth attn session --project "$PWD" \
+oberth attn assess --follow --project "$PWD" \
   --task "keep the API healthy while the integration test runs" \
   --authorize inspect_logs,inspect_port,restart_service,continue_without_action,ask_user_for_context
 ```
@@ -69,7 +69,7 @@ cat > "${TMPDIR:-/tmp}/oberth-task-$$.json" <<'JSON'
   ]
 }
 JSON
-oberth attn session --project "$PWD" --task-context "${TMPDIR:-/tmp}/oberth-task-$$.json"
+oberth attn assess --follow --project "$PWD" --task-context "${TMPDIR:-/tmp}/oberth-task-$$.json"
 ```
 
 `--task` and `--authorize` override the same fields from the file. With neither
@@ -78,8 +78,9 @@ required` or `--authorize (or authorized_options) is required` — it will not
 guess an allow-list for you.
 
 `authorized_options` is an allow-list for the current task, not user approval;
-side effects still require an explicit user choice. `oberth attn session` is
-the long-lived form of `oberth attn assess`. The runner reads `$BERTH_HOME/attn.json`
+side effects still require an explicit user choice. `oberth attn assess
+--follow` is the long-lived form of the one-shot `oberth attn assess`. The runner
+reads `$BERTH_HOME/attn.json`
 (default `~/.option-berth/attn.json`); a copy there with `enabled: false` keeps
 the session fact-only and prevents a remote call. Under an isolated `BERTH_HOME` the default home file is not the one being
 read.
@@ -88,7 +89,7 @@ For a task that remains active while services run, use the agent-side
 subscription instead of rebuilding the request repeatedly:
 
 ```sh
-oberth attn session --project "$PWD" --interval 2s \
+oberth attn assess --follow --project "$PWD" --interval 2s \
   --task-context "${TMPDIR:-/tmp}/oberth-task-$$.json"
 ```
 
@@ -105,7 +106,7 @@ repository or send it to a provider. When recording feedback, include only the e
 identity, revision, fixed enums, and outcome; never include task text, logs,
 commands, absolute paths, credentials, or free-form model output.
 
-Use `oberth attn report` to inspect local results. A `null` metric
+Use `oberth attn status --json --since 0` to inspect local results. A `null` metric
 means there are not enough labeled cases. Read `labeled_cases`,
 `unlabeled_cases`, and `label_coverage` before interpreting a score. The
 `sessions` object explains whether a quiet ledger came from an armed session
