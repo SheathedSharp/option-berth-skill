@@ -222,6 +222,20 @@ Use `--replace` or `--merge` only after the person chooses that write. Do not
 edit `oberth.yaml`, invent a service command, install hooks/MCP, or adopt a
 draft on the agent's own authority.
 
+A worktree created with `git worktree add` starts without a manifest, whatever a
+sibling worktree declares: the file belongs to that directory, not to the
+branch. Inherit one from another checkout instead of drafting the same services
+from zero:
+
+```sh
+oberth init adopt ../other-checkout/oberth.yaml --dry-run --diff
+oberth init adopt ../other-checkout/oberth.yaml
+```
+
+That is a write too, so it needs the same human decision as adopting a draft.
+Whether a checkout tracks its manifest is the person's choice; do not add it to
+`.gitignore` yourself. After adoption the two checkouts are independent.
+
 A `prepare` command must rebuild the current checkout before the long-lived
 `cmd`; never rely on a stale artifact. Add it only when the person adopts it.
 
