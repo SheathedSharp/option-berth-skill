@@ -36,7 +36,7 @@ default guide for "start it and tell me why it is not running".
 
 The full `oberth status --json` is a different read, not a bigger default: it
 adds the manifest copies, the git summary, `drafts[]`, `changed` and
-`attention_path`. Read it when the task is about one of those — which draft is
+`attn_path`. Read it when the task is about one of those — which draft is
 waiting to be adopted, what changed since the last read, the repository
 summary, or the attention handoff — and stay on the brief document otherwise.
 

@@ -63,11 +63,11 @@ For a service task, the default loop is:
 5. Fix the declared input, repeat the operation, and refresh
    `status --json --brief`.
 
-`attention_path` is optional context, not a required branch after `status`, and
+`attn_path` is optional context, not a required branch after `status`, and
 the brief read does not carry it at all. Read
 [references/attention.md](references/attention.md) only when the task is
-explicitly about Jev, quality feedback, or human handoff, or when the full
-`status --json` published an `attention_path` and the current anomaly blocks the
+explicitly about the optional assessment, quality feedback, or human
+handoff, or when the full `status --json` published an `attn_path` and the current anomaly blocks the
 task and a person must choose among the fixed options. A `machine:` entry that
 no declared service `depends_on` is a read-only fact: report its `listening`
 value, and check `machine[].listening_known` — `false` means the listener table
@@ -93,7 +93,8 @@ Read the detailed guide only for the mode the task needs:
   to: [references/workplace.md](references/workplace.md).
 - Explicitly related worktrees or repositories:
   [references/cross-worktree.md](references/cross-worktree.md).
-- `attention_path`, Jev, human-in-the-loop, or quality feedback (optional):
+- `attn_path`, the optional assessment, human-in-the-loop, or quality feedback
+  (optional):
   [references/attention.md](references/attention.md).
 - Oberth itself got in the way — a command hung, a read was far slower than its
   work, the published facts could not tell two states apart, a hint did not
