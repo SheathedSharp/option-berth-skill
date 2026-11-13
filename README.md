@@ -11,6 +11,8 @@
 | macOS 客户端 | [SheathedSharp/option-berth-macos](https://github.com/SheathedSharp/option-berth-macos) | 原生界面，呈现同一份事实 |
 | **本仓库** | — | 教会 agent 使用上面这份事实 |
 
+当前版本 **0.9.2**。这份 README 随 skill 一起分发，所以它开头的版本就是手上那份的版本。
+
 ## 安装
 
 skill 随本仓库分发，引擎不会替你装。三种方式挑一种；散落目录里只留一份同名 skill，
@@ -51,6 +53,18 @@ ln -sfn "$PWD/option-berth-skill" ~/.claude/skills/option-berth
 要固定版本，先 `git -C option-berth-skill checkout <commit>`，再建软链。这时 clone 处于
 游离 HEAD，`git pull` 会拒绝执行；回到主线用 `git -C option-berth-skill checkout main`。
 用复制代替软链时，这份副本不会自己更新。
+
+## 发布
+
+新契约发布时，在同一个 PR 里同步三处：
+
+- `SKILL.md` 的 `metadata.version`
+- `.claude-plugin/plugin.json` 的 `version`，插件市场按它决定是否推送更新
+- 本 README 开头的当前版本
+
+引擎仓库的 `scripts/check_skill_contract.py` 从 CLI 契约、清单 schema 和 observation
+常量里取锚点，检查本仓库的 `SKILL.md` 和 `references/*.md` 是否覆盖。契约变了先改内容，
+再改版本号。只改版本号过不了引擎的检查。
 
 ## 内容
 
