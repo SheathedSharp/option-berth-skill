@@ -1,133 +1,136 @@
 # option-berth skill
 
-给 coding agent 的指引：读懂一个 worktree 的服务声明与运行事实，把服务跑起来，
-失败时定位原因，并把这一轮工作记录留给下一次会话。
+<p align="center">English · <a href="README.zh.md">简体中文</a></p>
 
-本仓库是三个独立产品之一，只通过 `oberth` CLI 及其 `--json` 契约与另外两个相连：
+This repository holds a guide for coding agents: read one worktree's declared
+services and runtime facts, start them, find out why they are not running, and
+leave the work behind for the next session.
 
-| 产品 | 仓库 | 它做什么 |
+It is one of three separate products. They meet only at the `oberth` CLI and
+its `--json` contract:
+
+| Product | Repository | What it does |
 | --- | --- | --- |
-| 引擎 | [SheathedSharp/option-berth](https://github.com/SheathedSharp/option-berth) | `oberth` 声明并观察服务，负责起停，输出人和 agent 都能读的事实 |
-| macOS 客户端 | [SheathedSharp/option-berth-macos](https://github.com/SheathedSharp/option-berth-macos) | 原生界面，呈现同一份事实 |
-| skill（本仓库） | [SheathedSharp/option-berth-skill](https://github.com/SheathedSharp/option-berth-skill) | 教会 agent 使用这份事实 |
+| Engine | [SheathedSharp/option-berth](https://github.com/SheathedSharp/option-berth) | `oberth` declares and observes services, starts and stops them, and publishes facts that both people and agents can read. |
+| macOS client | [SheathedSharp/option-berth-macos](https://github.com/SheathedSharp/option-berth-macos) | A native interface over the same facts. |
+| Skill (this repository) | [SheathedSharp/option-berth-skill](https://github.com/SheathedSharp/option-berth-skill) | Teaches an agent to use those facts. |
 
-当前版本 **0.9.2**。README 随 skill 一起分发，因此这里的版本号就是本地副本的版本号。
+The current version is **0.9.2**. Both READMEs ship with the skill, so this
+number is the version of the copy you have.
 
-## 安装
+## Install
 
-skill 随本仓库分发，引擎不负责安装。三种方式任选一种。skill 目录里只留一份
-`option-berth`。插件安装的那份带命名空间，两者不会冲突。
+The skill ships in this repository. The engine does not install it. Pick one
+of the three methods. Keep one copy of `option-berth` in your skills directory.
+The plugin copy is namespaced, so the two do not collide.
 
 ### Skills CLI
 
-支持 Claude Code、Codex、Cursor、OpenCode 等本机已安装的 agent：
+The Skills CLI supports Claude Code, Codex, Cursor, OpenCode, and any other
+agent installed on this machine:
 
 ```sh
 npx skills add SheathedSharp/option-berth-skill -g
 ```
 
-`-g` 装到用户级，去掉则装进当前项目，随仓库共享。安装器识别本机已有的 agent，
-默认把它们软链到同一份源副本。要固定到某个提交，在仓库名后加 `#<commit>`，
-之后 `npx skills update` 不会离开这个提交。本页其余 `npx skills` 命令也按这条规则：
-项目级安装时去掉 `-g`。
+`-g` installs at the user level. Leave it out to install into the current
+project and share it through the repository. The installer detects the agents
+already on this machine and symlinks them to one source copy by default. To pin
+a commit, append `#<commit>` to the repository name, and `npx skills update`
+then stays on that commit. The other `npx skills` commands on this page follow
+the same rule: leave out `-g` for a project-level install.
 
-### Claude Code 插件市场
+### Claude Code plugin marketplace
 
 ```text
 /plugin install option-berth --marketplace SheathedSharp/option-berth-skill
 ```
 
-插件市场名是 `sheathedsharp`。旧版 Claude Code 先运行
-`/plugin marketplace add SheathedSharp/option-berth-skill`，再运行
-`/plugin install option-berth@sheathedsharp`。插件内的 skill 带命名空间，
-不会与 skill 目录里的同名 skill 冲突。
+The marketplace name is `sheathedsharp`. On older Claude Code, run
+`/plugin marketplace add SheathedSharp/option-berth-skill` first, then
+`/plugin install option-berth@sheathedsharp`. The skill inside the plugin is
+namespaced, so it does not collide with the copy in a skills directory.
 
-### 手工克隆并软链
+### Clone and symlink
 
 ```sh
 git clone https://github.com/SheathedSharp/option-berth-skill.git
-mkdir -p ~/.claude/skills          # 以 Claude Code 为例，其他 agent 用各自的 skill 目录
+mkdir -p ~/.claude/skills          # Claude Code shown; other agents differ
 ln -sfn "$PWD/option-berth-skill" ~/.claude/skills/option-berth
 ```
 
-要固定版本，先 `git -C option-berth-skill checkout <commit>`，再建软链。这时 clone 处于
-游离 HEAD，`git pull` 会拒绝执行。回到 `main` 用
-`git -C option-berth-skill checkout main`。用复制代替软链时，副本不会自动更新。
+To pin a version, run `git -C option-berth-skill checkout <commit>` before you
+create the symlink. The clone is then on a detached HEAD, and `git pull`
+refuses to run. Return to `main` with
+`git -C option-berth-skill checkout main`. A copy instead of a symlink does not
+update itself.
 
-## 升级
+## Upgrade
 
-| 装法 | 有没有新版 | 升级 |
+| Install method | Is a new version available? | Upgrade |
 | --- | --- | --- |
-| Skills CLI | `npx skills check -g option-berth` 只检查不安装，有更新或检查失败时退出码为 1 | `npx skills update -g option-berth` |
-| Claude Code 插件 | 插件市场没有只检查的命令 | `claude plugin update option-berth`，或在 `/plugin` 面板里操作 |
-| 手工克隆 | `git -C <目录> fetch`，再用 `git -C <目录> status -sb` 看是否落后 | `git -C <目录> pull --ff-only`。软链无需重建 |
+| Skills CLI | `npx skills check -g option-berth` checks without installing, and exits 1 when an update is available or the check fails | `npx skills update -g option-berth` |
+| Claude Code plugin | The plugin marketplace has no check-only command | `claude plugin update option-berth@sheathedsharp`, or use the `/plugin` panel |
+| Clone | `git -C <dir> fetch`, then `git -C <dir> status -sb` shows whether the clone is behind | `git -C <dir> pull --ff-only`. The symlink stays valid |
 
-固定在某个提交上的 clone 先 `checkout main`，再按上表升级。
+A clone pinned to a commit returns to `main` first with
+`git -C <dir> checkout main`, then upgrades as the table says.
 
-装了哪一版：skill 目录里装了副本时，`oberth doctor --only agent_skill --json` 的 `detail`
-列出每个副本的路径和版本，多份副本版本不一致时告警。插件用 `claude plugin list` 查看。
-Skills CLI 自身不带版本，`check` 只回答有没有更新。
+Which version is installed: when a copy sits in a skills directory,
+`oberth doctor --only agent_skill --json` lists the path and version of each
+copy in `detail`, and warns when the copies disagree. For a plugin, run
+`claude plugin list`. The Skills CLI keeps no version of its own, and `check`
+answers only whether an update exists.
 
-skill 里的命令和字段以引擎契约为准。引擎不知道哪份副本过期，只是照常执行：命令或 flag
-改过会直接报错，字段改过则读不到值。遇到这两类错误先升级，再排查其他原因。
+The commands and fields in this skill follow the engine contract. The engine
+does not know which copy is out of date, so it runs as usual: a changed command
+or flag fails immediately, and a changed field reads as absent. On either
+error, upgrade first, then look for another cause.
 
-## 卸载
+## Uninstall
 
-| 装法 | 卸载 |
+| Install method | Uninstall |
 | --- | --- |
 | Skills CLI | `npx skills remove -g option-berth` |
-| Claude Code 插件 | `claude plugin uninstall option-berth@sheathedsharp`。不再用这个市场时运行 `/plugin marketplace remove sheathedsharp` |
-| 手工克隆 | 删掉 `~/.claude/skills/option-berth` 这条软链，再删 clone 的目录 |
+| Claude Code plugin | `claude plugin uninstall option-berth@sheathedsharp`. To stop using this marketplace, run `/plugin marketplace remove sheathedsharp` |
+| Clone | Delete the `~/.claude/skills/option-berth` symlink, then the clone directory |
 
-skill 里只有说明文档和 `agents/openai.yaml` 这一份 agent 接口声明，不安装钩子，
-也不修改 agent 配置。卸载不会修改 `oberth.yaml`、运行状态和项目文件。
+The skill contains documentation and one agent interface declaration,
+`agents/openai.yaml`. It installs no hooks and changes no agent configuration.
+Uninstalling leaves `oberth.yaml`, runtime state, and project files untouched.
 
-## 发布
+## Release
 
-新契约发布时，在同一个 PR 里同步三处：
+When the engine publishes a new contract, update three places in the same pull
+request:
 
-- `SKILL.md` 的 `metadata.version`
-- `.claude-plugin/plugin.json` 的 `version`，插件市场按它决定是否推送更新
-- 本 README 开头的当前版本
+- `metadata.version` in `SKILL.md`
+- `version` in `.claude-plugin/plugin.json`, which the marketplace reads to
+  decide whether to push an update
+- the current version at the top of `README.md` and `README.zh.md`
 
-引擎仓库的 `scripts/check_skill_contract.py` 从 CLI 契约、清单 schema 和 observation
-常量里取锚点，检查本仓库的 `SKILL.md` 和 `references/*.md` 是否覆盖。契约变了先改内容，
-再改版本号。只改版本号无法通过引擎的检查。
+`scripts/check_skill_contract.py` in the engine repository takes anchors from
+the CLI contract, the manifest schema, and the observation constants, then
+checks that `SKILL.md` and `references/*.md` here cover them. Change the content
+first, and the version second. A version bump alone does not pass the engine's
+check.
 
-## 内容
+## Contents
 
-- [`SKILL.md`](SKILL.md) 是入口：先读当前 worktree，再按任务打开一份 reference。
-- `references/` 按任务分册：服务起停与失败原因、监听观察与沙箱、清单起草与采纳、
-  worktree 身份与清理、工作记录、跨 worktree 观察。attention 交接只在需要人做选择时
-  使用。`oberth feedback` 单独一册，写明固定的触发条件与步骤。
+- [`SKILL.md`](SKILL.md) is the entry point: read the current worktree first,
+  then open one reference for the task.
+- `references/` holds one guide per task: service lifecycle and failure
+  reasons, listener observation and sandboxes, manifest drafting and adoption,
+  worktree identity and cleanup, the workplace record, and cross-worktree
+  observation. The attention handoff is only for a choice a person has to make.
+  `oberth feedback` has its own guide, with its fixed triggers and steps.
 
-契约以引擎仓库为准：[CLI](https://github.com/SheathedSharp/option-berth/blob/main/docs/cli.md)、
-[清单](https://github.com/SheathedSharp/option-berth/blob/main/engine/docs/schema/manifest.schema.json)、
-[产品边界](https://github.com/SheathedSharp/option-berth/blob/main/docs/product.md)、
-[工作记录](https://github.com/SheathedSharp/option-berth/blob/main/docs/workplace.md)。
+The contract lives in the engine repository:
+[CLI](https://github.com/SheathedSharp/option-berth/blob/main/docs/cli.md),
+[manifest](https://github.com/SheathedSharp/option-berth/blob/main/engine/docs/schema/manifest.schema.json),
+[product](https://github.com/SheathedSharp/option-berth/blob/main/docs/product.md),
+[workplace](https://github.com/SheathedSharp/option-berth/blob/main/docs/workplace.md).
 
-## 许可证
+## License
 
-与引擎相同，适用 MIT。见 [LICENSE](LICENSE)。
-
-## English
-
-This repository ships the skill that teaches a coding agent to read one worktree's declared
-services and runtime facts, run them, find out why they are not running, and leave the work behind
-for the next session. The skill, the engine, and the macOS client are separate products and meet
-only at the `oberth` CLI and its `--json` contract.
-
-Install it with `npx skills add SheathedSharp/option-berth-skill -g`, with `/plugin install
-option-berth --marketplace SheathedSharp/option-berth-skill`, or by cloning the repository and
-symlinking it into your agent's skills directory. The version at the top of this file ships with the
-skill, so it is the version of the copy you have.
-
-`npx skills check -g option-berth` reports whether that skill's source changed, installs nothing, and
-exits 1 when an update is available or the check fails. Install the update with `npx skills update
--g option-berth`. A plugin install shows its version in `claude plugin list` and updates with
-`claude plugin update option-berth`. A clone updates with `git pull`; when it is pinned to a commit,
-check out main first. `oberth doctor --only agent_skill --json` lists every copy it finds under the
-agent skill directories, with the version each declares. Uninstall with `npx skills remove -g
-option-berth`, `claude plugin uninstall option-berth@sheathedsharp`, or by deleting the symlink and
-the clone. The skill ships documentation and one agent interface declaration, so uninstalling it
-changes no hooks, no agent configuration, and no project files.
+The license is MIT, the same as the engine. See [LICENSE](LICENSE).
