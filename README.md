@@ -54,6 +54,23 @@ ln -sfn "$PWD/option-berth-skill" ~/.claude/skills/option-berth
 游离 HEAD，`git pull` 会拒绝执行；回到主线用 `git -C option-berth-skill checkout main`。
 用复制代替软链时，这份副本不会自己更新。
 
+## 升级
+
+| 装法 | 有没有新版 | 升级 |
+| --- | --- | --- |
+| Skills CLI | `npx skills check -g option-berth`，只查不装，有更新或检查失败时退出码为 1 | `npx skills update -g option-berth` |
+| Claude Code 插件 | 市场没有只查不装的命令 | `claude plugin update option-berth`，或在 `/plugin` 面板里操作 |
+| 手工克隆 | `git -C <目录> fetch` 后用 `git -C <目录> status -sb` 看是否 behind | `git -C <目录> pull --ff-only`，软链不用重建 |
+
+固定在某个提交上的 clone 先 `checkout main`，再按上表升级。
+
+装的是哪一版：技能目录里装了副本时，`oberth doctor --only agent_skill --json` 的 `detail`
+列出每个副本的路径和版本，多份副本版本不一致时会告警。插件还可以用 `claude plugin list`。
+Skills CLI 自己不带版本，`check` 只回答有没有更新。
+
+skill 里的命令和字段跟着引擎契约走。引擎不知道哪份副本过期，只是照常执行：命令或 flag
+改过就直接报错，字段改过则读不到值。升级后再排查其他原因。
+
 ## 发布
 
 新契约发布时，在同一个 PR 里同步三处：
