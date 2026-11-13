@@ -71,6 +71,17 @@ Skills CLI 自己不带版本，`check` 只回答有没有更新。
 skill 里的命令和字段跟着引擎契约走。引擎不知道哪份副本过期，只是照常执行：命令或 flag
 改过就直接报错，字段改过则读不到值。升级后再排查其他原因。
 
+## 卸载
+
+| 装法 | 卸载 |
+| --- | --- |
+| Skills CLI | `npx skills remove -g option-berth` |
+| Claude Code 插件 | `claude plugin uninstall option-berth@sheathedsharp`。不再用这个市场时运行 `/plugin marketplace remove sheathedsharp` |
+| 手工克隆 | 删掉 `~/.claude/skills/option-berth` 这条软链，再删 clone 的目录 |
+
+skill 里只有说明文档和 `agents/openai.yaml` 这一份 agent 接口声明，不安装钩子，
+也不修改 agent 配置。卸载不会动 `oberth.yaml`、运行状态和项目文件。
+
 ## 发布
 
 新契约发布时，在同一个 PR 里同步三处：
