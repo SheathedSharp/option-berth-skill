@@ -7,10 +7,11 @@ default guide for "start it and tell me why it is not running".
 ## Core loop
 
 1. Read `oberth status --json --brief`: the declared services, `running`,
-   `port_actual`, `services[].health.status`, the current exit reason and code,
-   `code_changed_since_start`, the attributed listeners, and the top-level
-   `observation`. A service that is still coming up carries
-   `services[].starting` with `starting.phase` (`waiting_dependency`,
+   `port_actual`, `services[].health.status` when the key is present (a stopped
+   service has no `health`; absence means unknown, not a negative result), the
+   current exit reason and code, `code_changed_since_start`, the attributed
+   listeners, and the top-level `observation`. A service that is still coming
+   up carries `services[].starting` with `starting.phase` (`waiting_dependency`,
    `prepare`, `spawning`), `starting.waiting_on`, `starting.elapsed_ms`,
    `starting.ready_timeout` and `starting.last_prepare_ms`. That is an
    in-flight attempt, not a run: it does not count as `running`, so do not
