@@ -27,17 +27,26 @@ oberth status --json --brief
 
 The brief document is the runtime facts: service states, declared and actual
 ports, `services[].health.status` when the key is present (the full document's
-`health_status`), the current exit reason and next step, the code-change
-fields, in-flight `starting`, and the top-level `observation` when the listener
-table cannot be trusted. It leaves out the manifest copies, the git summary,
-the change ledger, and the attention handoff, which are most of a full
+`health_status`), the current exit reason and next step, the code-change and
+executable fields, in-flight `starting`, and the top-level `observation` when
+the listener table cannot be trusted. It leaves out the manifest copies, the git
+summary, the change ledger, and the attention handoff, which are most of a full
 `status --json`. Narrow it further with `--only api,worker` when the task is
 about named services.
 
 Per-service keys are present only when the fact exists. A stopped service has
 no `health` or `port_actual`, and an absent `code_changed_since_start` means
 unknown, not "unchanged". Absence is never a negative result: read `running`
-first, and use `exit_reason` for a service that is down.
+first, and use `exit_reason` for a service that is down. A running service with
+a declared health check may carry `health.status: unknown` with
+`reason: pending` before its first probe; that is not a failure.
+
+`worktree.ad_hoc_runs` lists runs started with `oberth start` that the manifest
+does not declare: `name`, `run_id`, `group`, `pid` and the `ports` each holds.
+Those ports belong to oberth, not to a stray process, so do not kill them by
+port. `restart --only` accepts only declared services; for an ad-hoc run, use
+the start line its `not_found` hint prints (or `oberth start` with the same
+group, name and port).
 
 Read `observation` before you use `ports`: `ports: []` together with
 `observation.state: blind` or `bind_denied` means this process cannot see
@@ -55,7 +64,8 @@ For a service task, the default loop is:
 2. Run the operation: `oberth up --wait --json`,
    `oberth restart --only <service> --json`, or `oberth down --json`. A
    `started` service with `services[].ready: false` is not confirmed ready. It
-   is not a failure.
+   is not a failure. Without `--wait`, `up` publishes `next` when readiness is
+   unconfirmed; run that command instead of polling sockets.
 3. On failure, match `services[].exit_reason` and, when present,
    `services[].health.status` against the table in
    [references/operations.md](references/operations.md), read the log the

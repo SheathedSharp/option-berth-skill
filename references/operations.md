@@ -8,9 +8,12 @@ default guide for "start it and tell me why it is not running".
 
 1. Read `oberth status --json --brief`: the declared services, `running`,
    `port_actual`, `services[].health.status` when the key is present (a stopped
-   service has no `health`; absence means unknown, not a negative result), the
-   current exit reason and code, `code_changed_since_start`, the attributed
-   listeners, and the top-level `observation`. A service that is still coming
+   service has no `health`; absence means unknown, not a negative result;
+   `unknown` with `reason: pending` means the first probe has not run yet), the
+   current exit reason and code, `code_changed_since_start`,
+   `executable_changed_since_start` (a directly-run binary rebuilt after the
+   run started), the attributed listeners, `worktree.ad_hoc_runs` (runs started
+   with `oberth start`, with their ports), and the top-level `observation`. A service that is still coming
    up carries `services[].starting` with `starting.phase` (`waiting_dependency`,
    `prepare`, `spawning`), `starting.waiting_on`, `starting.elapsed_ms`,
    `starting.ready_timeout` and `starting.last_prepare_ms`. That is an
@@ -21,6 +24,8 @@ default guide for "start it and tell me why it is not running".
    `oberth up --wait --json` for the project, `oberth up --only api,worker --json`
    for part of it, `oberth restart --only api --json` to re-apply the current
    manifest to one service, or `oberth down --json` to stop the project.
+   Without `--wait`, `up` publishes `next` when readiness is unconfirmed; run
+   that command instead of polling sockets.
 3. If it failed, match the evidence in the table below and read the log the
    reason names. `oberth logs <service> --once --json --run current
    --first-error` returns the first line of this run that matches the fixed
@@ -34,6 +39,11 @@ default guide for "start it and tell me why it is not running".
    `status --json --brief`.
 6. Report the worktree path and branch, declared services and states, attributed
    runtime facts, the last failure evidence, and the next bounded command.
+
+Ports in `worktree.ad_hoc_runs` belong to oberth even though no manifest
+declares the run. Do not kill them by port. `restart --only` only accepts
+declared services; for an ad-hoc run, use the start line its `not_found` hint
+prints, or `oberth start` with the same group, name and port.
 
 The full `oberth status --json` is a different read, not a bigger default: it
 adds the manifest copies, the git summary, `drafts[]`, `changed`, and
