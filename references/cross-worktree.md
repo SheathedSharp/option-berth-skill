@@ -27,8 +27,8 @@ oberth events --repository <repo-id>
 Each participating agent supplies its own worktree or repository selector and
 the same workspace label. If the task gives no label, derive a stable label
 from the explicitly selected roots; the label coordinates members but does not
-discover them. Keep the streaming process/session owned by the task and stop it
-when the relation is no longer needed.
+discover them. Keep the streaming process or session owned by the task, and stop
+it when the relation is no longer needed.
 
 The first NDJSON record is a redacted `state.snapshot`; later records are
 `state.changed` summaries. A worktree selector follows the daemon's existing
