@@ -103,7 +103,7 @@ skill 里只有说明文档和 `agents/openai.yaml` 这一份 agent 接口声明
   人工选择时使用；`oberth feedback` 的固定触发条件与步骤在可选的一节里。
 
 契约以引擎仓库为准：[CLI](https://github.com/SheathedSharp/option-berth/blob/main/docs/cli.md)、
-[清单](https://github.com/SheathedSharp/option-berth/blob/main/docs/cli.md)、
+[清单](https://github.com/SheathedSharp/option-berth/blob/main/engine/docs/schema/manifest.schema.json)、
 [产品边界](https://github.com/SheathedSharp/option-berth/blob/main/docs/product.md)、
 [工作记录](https://github.com/SheathedSharp/option-berth/blob/main/docs/workplace.md)。
 
