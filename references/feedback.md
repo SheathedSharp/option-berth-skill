@@ -23,11 +23,11 @@ contract already answers a normal service failure: `crashed`, `start_failed`,
 
 ## What to send
 
-~~~sh
+```sh
 oberth feedback report --kind stalled --command up \
   --error-code observation_blind --observation blind \
   --elapsed 3m --services 4 --note "up --wait returned no facts for three minutes"
-~~~
+```
 
 - `--kind` from the table above.
 - `--command` the oberth command involved.
@@ -50,15 +50,15 @@ them.
 
 1. Read the current decision:
 
-   ~~~sh
+   ```sh
    oberth feedback status --json
-   ~~~
+   ```
 
 2. Compose and preview without sending:
 
-   ~~~sh
+   ```sh
    oberth feedback report --kind stalled --command up --elapsed 3m --dry-run
-   ~~~
+   ```
 
 3. Show the person the note and ask before it leaves the machine. Send with
    `--yes` only after they agreed: without it, a free-text report is refused on

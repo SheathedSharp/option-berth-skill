@@ -21,9 +21,9 @@ runtime. `oberth --help` shows the same grouping.
 
 Read the current worktree before reasoning about services:
 
-~~~sh
+```sh
 oberth status --json --brief
-~~~
+```
 
 The brief document is the runtime facts: service states, declared and actual
 ports, `services[].health.status` (the full document's `health_status`), the
@@ -76,10 +76,10 @@ Do not hand it off, arm a session, or start it.
 
 For code changes, read the worktree-scoped Git summary as well:
 
-~~~sh
+```sh
 oberth git files --json
 oberth git diff --json --file path/to/file
-~~~
+```
 
 Read the detailed guide only for the mode the task needs:
 
@@ -107,10 +107,10 @@ The loop above assumes the facts arrive. When they do not, say so to the person
 first. Then, only if this installation agreed, file one improvement report
 about the engine, not about the project:
 
-~~~sh
+```sh
 oberth feedback status --json
 oberth feedback report --kind stalled --command up --elapsed 3m --dry-run
-~~~
+```
 
 A failure already explained by `exit_reason`, `services[].health.status`, or the
 operation table is not a report. The fixed kinds, the flags, the note rule, and

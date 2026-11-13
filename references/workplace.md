@@ -61,7 +61,7 @@ Recording never starts a daemon. With none listening, `oberth start` and
 `oberth agent stream` say so once on stderr and record nothing. Do not read an
 empty workplace as "no work happened".
 
-## Organise
+## Organize
 
 ```sh
 oberth workplace new spike --json

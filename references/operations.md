@@ -201,10 +201,10 @@ the manifest is wrong.
 
 `status --json --brief` and the full `status --json` both publish the same top-level `observation`:
 
-~~~json
+```json
 {"state":"bind_denied","code":"observation_bind_denied",
  "detail":"...","hint":"...","checked_at":"..."}
-~~~
+```
 
 Read it before treating `ports` as complete. The fields mean:
 
@@ -219,9 +219,9 @@ On macOS 27 the collector may fall back to `lsof`. That round is still
 `observable` for this process's own listener, and it names the collector in
 `observation.source`:
 
-~~~json
+```json
 {"state":"observable","source":"lsof","detail":"...","checked_at":"..."}
-~~~
+```
 
 A non-empty `observation.source` means the table is narrow: it cannot see
 sockets owned by other users, so a port missing from it is unknown, not free.
