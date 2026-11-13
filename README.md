@@ -113,12 +113,22 @@ skill 里只有说明文档和 `agents/openai.yaml` 这一份 agent 接口声明
 
 ## English
 
-The skill that teaches a coding agent to read one worktree's declared services and runtime
-facts, run them, find out why they are not running, and leave the work behind for the next
-session. It is one of three independent products and talks to the others only through the
-`oberth` CLI and its `--json` contract.
+This repository ships the skill that teaches a coding agent to read one worktree's declared
+services and runtime facts, run them, find out why they are not running, and leave the work behind
+for the next session. The skill, the engine, and the macOS client are separate products and meet
+only at the `oberth` CLI and its `--json` contract.
 
-Install it with `npx skills add SheathedSharp/option-berth-skill -g`, or in Claude Code with
-`/plugin install option-berth --marketplace SheathedSharp/option-berth-skill`. Both keep one
-canonical copy and update it in place. Cloning and symlinking into your agent's skills directory
-remains the offline option; update that one with `git pull`.
+Install it with `npx skills add SheathedSharp/option-berth-skill -g`, with `/plugin install
+option-berth --marketplace SheathedSharp/option-berth-skill`, or by cloning the repository and
+symlinking it into your agent's skills directory. The version at the top of this file ships with the
+skill, so it is the version of the copy you have.
+
+`npx skills check -g option-berth` reports whether that skill's source changed, installs nothing, and
+exits 1 when an update is available or the check fails. Install the update with `npx skills update
+-g option-berth`. A plugin install shows its version in `claude plugin list` and updates with
+`claude plugin update option-berth`. A clone updates with `git pull`; when it is pinned to a commit,
+check out main first. `oberth doctor --only agent_skill --json` lists every copy it finds under the
+agent skill directories, with the version each declares. Uninstall with `npx skills remove -g
+option-berth`, `claude plugin uninstall option-berth@sheathedsharp`, or by deleting the symlink and
+the clone. The skill ships documentation and one agent interface declaration, so uninstalling it
+changes no hooks, no agent configuration, and no project files.
