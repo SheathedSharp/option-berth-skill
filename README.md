@@ -13,10 +13,10 @@
 
 ## 安装
 
-skill 随本仓库分发，装不装由使用者决定；引擎不会替你装。下面三种方式**选一种**，
-不要在同一台机器上同时装两份同名 skill。
+skill 随本仓库分发，引擎不会替你装。三种方式挑一种；散落目录里只留一份同名 skill，
+插件那份带命名空间，不会和它混。
 
-### Skills CLI（推荐）
+### Skills CLI
 
 支持 Claude Code、Codex、Cursor、OpenCode 等本机已安装的 agent：
 
@@ -24,14 +24,10 @@ skill 随本仓库分发，装不装由使用者决定；引擎不会替你装�
 npx skills add SheathedSharp/option-berth-skill -g
 ```
 
-`-g` 装到用户级；去掉它则装进当前项目，随仓库共享。安装器会识别现有的 agent，
-默认用软链指向一份规范副本。之后用同一套命令检查和更新：
-
-```sh
-npx skills check
-npx skills update
-npx skills remove option-berth
-```
+`-g` 装到用户级，去掉 `-g` 则装进当前项目随仓库共享。安装器识别本机已有的 agent，
+默认软链到一份规范副本。要固定到某个提交，在仓库名后加 `#<commit>`。固定之后
+`npx skills update` 不会离开这个提交。本页后面的 `npx skills` 命令也一样，项目级安装时
+去掉 `-g`。
 
 ### Claude Code 插件市场
 
@@ -41,12 +37,10 @@ npx skills remove option-berth
 
 插件市场名是 `sheathedsharp`。旧版 Claude Code 先运行
 `/plugin marketplace add SheathedSharp/option-berth-skill`，再运行
-`/plugin install option-berth@sheathedsharp`。更新用
-`/plugin marketplace update sheathedsharp`，卸载用
-`/plugin uninstall option-berth@sheathedsharp`。插件内的 skill 带命名空间，
+`/plugin install option-berth@sheathedsharp`。插件内的 skill 带命名空间，
 不会和散落目录里的同名 skill 混淆。
 
-### 手工克隆 + 软链（离线或固定版本）
+### 手工克隆并软链
 
 ```sh
 git clone https://github.com/SheathedSharp/option-berth-skill.git
@@ -54,15 +48,9 @@ mkdir -p ~/.claude/skills          # 以 Claude Code 为例；其他 agent 用�
 ln -sfn "$PWD/option-berth-skill" ~/.claude/skills/option-berth
 ```
 
-这条路径靠 `git pull` 更新。如果复制而不是软链，那份不会自己更新：命令或 `--json`
-形状变了它还停在旧契约上。
-
-发布新契约时，同步 `SKILL.md` 的 `metadata.version` 与 `.claude-plugin/plugin.json`
-的 `version`；插件市场按后者判断是否把更新推给已安装的用户。
-
-引擎仓库的 `scripts/check_skill_contract.py` 会从 CLI 契约、清单 schema 与 observation
-常量提取锚点，检查本仓库的 `SKILL.md` 与 `references/*.md` 是否覆盖。契约变化时先更新
-内容，再同步版本号；只改版本号不会让引擎的检查通过。
+要固定版本，先 `git -C option-berth-skill checkout <commit>`，再建软链。这时 clone 处于
+游离 HEAD，`git pull` 会拒绝执行；回到主线用 `git -C option-berth-skill checkout main`。
+用复制代替软链时，这份副本不会自己更新。
 
 ## 内容
 
