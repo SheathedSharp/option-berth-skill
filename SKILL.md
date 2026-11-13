@@ -14,8 +14,8 @@ NDJSON for a stream; errors belong on stderr.
 
 This skill ships with the repository and is part of the product, not a summary
 of it: it is how a coding agent is meant to learn `oberth`. Commands are grouped
-by what you are trying to do — facts, operations, code and declaration, handoff,
-runtime — and `oberth --help` shows the same grouping.
+by what you are trying to do: facts, operations, code and declaration, handoff,
+runtime. `oberth --help` shows the same grouping.
 
 ## Default loop
 
@@ -28,9 +28,9 @@ oberth status --json --brief
 The brief document is the runtime facts: service states, declared and actual
 ports, `services[].health.status` (the full document's `health_status`), the
 current exit reason and next step, the code-change fields, in-flight
-`starting`, and — when the listener table cannot be trusted — the top-level
-`observation`. It leaves out the manifest copies, the git summary, the change
-ledger and the attention handoff, which are most of a full `status --json`.
+`starting`, and the top-level `observation` when the listener table cannot be
+trusted. It leaves out the manifest copies, the git summary, the change ledger,
+and the attention handoff, which are most of a full `status --json`.
 Narrow it further with `--only api,worker` when the task is about named
 services.
 
@@ -49,7 +49,7 @@ For a service task, the default loop is:
 1. Read `status --json --brief`, the declared services, and `observation`.
 2. Run the operation: `oberth up --wait --json`,
    `oberth restart --only <service> --json`, or `oberth down --json`. A
-   `started` service with `services[].ready: false` is not confirmed ready; it
+   `started` service with `services[].ready: false` is not confirmed ready. It
    is not a failure.
 3. On failure, match `services[].exit_reason` and `services[].health.status`
    against the table in [references/operations.md](references/operations.md),
@@ -63,16 +63,16 @@ For a service task, the default loop is:
 5. Fix the declared input, repeat the operation, and refresh
    `status --json --brief`.
 
-`attn_path` is optional context, not a required branch after `status`, and
-the brief read does not carry it at all. Read
+`attn_path` is optional context, not a required branch after `status`, and the
+brief read does not carry it at all. Read
 [references/attention.md](references/attention.md) only when the task is
-explicitly about the optional assessment, quality feedback, or human
-handoff, or when the full `status --json` published an `attn_path` and the current anomaly blocks the
-task and a person must choose among the fixed options. A `machine:` entry that
-no declared service `depends_on` is a read-only fact: report its `listening`
-value, and check `machine[].listening_known` — `false` means the listener table
-cannot see that port's owner, so say unknown rather than down; do not hand it
-off, arm a session, or start it.
+explicitly about the optional assessment, quality feedback, or human handoff,
+or when the full `status --json` published an `attn_path`, the current anomaly
+blocks the task, and a person must choose among the fixed options. A `machine:`
+entry that no declared service `depends_on` is a read-only fact: report its
+`listening` value, and check `machine[].listening_known`. `false` means the
+listener table cannot see that port's owner, so say unknown rather than down.
+Do not hand it off, arm a session, or start it.
 
 For code changes, read the worktree-scoped Git summary as well:
 
@@ -84,10 +84,10 @@ oberth git diff --json --file path/to/file
 Read the detailed guide only for the mode the task needs:
 
 - Service start, stop, restart, logs, status reporting, a failed start, an
-  observation/sandbox error, or worktree identity and cleanup:
+  observation or sandbox error, or worktree identity and cleanup:
   [references/operations.md](references/operations.md).
 - Manifest drafting, adoption, `prepare:` / `prepare_inputs:`, `sources:`,
-  `env_file:`, health checks, ports and references such as `${worktree}`,
+  `env_file:`, health checks, ports, and references such as `${worktree}`,
   `machine:`, or `workspace:` [references/manifest.md](references/manifest.md).
 - What work has been done in this worktree, or which workplace new work belongs
   to: [references/workplace.md](references/workplace.md).
@@ -96,15 +96,15 @@ Read the detailed guide only for the mode the task needs:
 - `attn_path`, the optional assessment, human-in-the-loop, or quality feedback
   (optional):
   [references/attention.md](references/attention.md).
-- Oberth itself got in the way — a command hung, a read was far slower than its
+- Oberth itself got in the way. A command hung, a read was far slower than its
   work, the published facts could not tell two states apart, a hint did not
-  match, or an observation code survived the documented next step:
+  match, or an observation code survived the documented next step. Then read
   [references/feedback.md](references/feedback.md).
 
 ## When oberth itself gets in the way
 
 The loop above assumes the facts arrive. When they do not, say so to the person
-first and then — only if this installation agreed — file one improvement report
+first. Then, only if this installation agreed, file one improvement report
 about the engine, not about the project:
 
 ~~~sh
@@ -112,8 +112,8 @@ oberth feedback status --json
 oberth feedback report --kind stalled --command up --elapsed 3m --dry-run
 ~~~
 
-A failure already explained by `exit_reason`, `services[].health.status` or the
-operation table is not a report. The fixed kinds, the flags, the note rule and
+A failure already explained by `exit_reason`, `services[].health.status`, or the
+operation table is not a report. The fixed kinds, the flags, the note rule, and
 the exact steps are in [references/feedback.md](references/feedback.md).
 
 ## Boundaries

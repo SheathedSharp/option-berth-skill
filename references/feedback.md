@@ -8,10 +8,9 @@ filed.
 
 ## When it is worth a report
 
-File one only when oberth itself got in the way in one of these fixed ways. A
-normal service failure — `crashed`, `start_failed`, `port_occupied`,
-`ready_timeout`, `dependency_not_ready` — is already answered by the contract;
-do not report it.
+File one only when oberth itself got in the way in one of these fixed ways. The
+contract already answers a normal service failure: `crashed`, `start_failed`,
+`port_occupied`, `ready_timeout`, `dependency_not_ready`. Do not report one.
 
 | kind | File it when |
 |---|---|
@@ -34,9 +33,9 @@ oberth feedback report --kind stalled --command up \
 - `--command` the oberth command involved.
 - `--error-code` only when the command returned one: copy `code` from the JSON
   error on stderr.
-- `--observation` only when you actually read `observation.state`:
-  `observable`, `partial`, `blind` or `bind_denied`.
-- `--elapsed` the wall clock you measured, such as `45s` or `3m`; the engine
+- `--observation` only when you have read `observation.state`:
+  `observable`, `partial`, `blind`, or `bind_denied`.
+- `--elapsed` the wall clock you measured, such as `45s` or `3m`. The engine
   files a bucket, not the number.
 - `--services` the number of services the manifest declares, when you know it.
 - `--note` one or two sentences in your own words: what you expected and what
@@ -44,8 +43,8 @@ oberth feedback report --kind stalled --command up \
 
 Never put a project name, path, service name, log line, command line, manifest
 field, environment value, or credential into `--note`. Redaction covers paths,
-addresses, logins and secrets, but it is a second line of defence, not
-permission.
+addresses, logins, and secrets. It is a fallback, not permission to include
+them.
 
 ## The steps
 

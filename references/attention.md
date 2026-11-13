@@ -20,13 +20,13 @@ The complete adapter contract is in
 
 ## Verify before acting
 
-Read the exact path from the current status; do not scan `BERTH_HOME`. Refresh
+Read the exact path from the current status. Do not scan `BERTH_HOME`. Refresh
 status before acting and verify that the artifact's worktree, state revision,
 and freshness marker still match. A missing, malformed, stale, or mismatched
 artifact is not actionable.
 
-`event` and `evidence` are code-produced facts. `assessment` is an optional model
-recommendation. It is never a fact, diagnosis, command, permission, or new
+`event` and `evidence` are code-produced facts. `assessment` is an optional
+model recommendation. It is never a fact, diagnosis, command, permission, or new
 option. Map recommendations only to the fixed option IDs present in the
 artifact's `options` and preserve the existing human approval boundary for
 `up`, `restart`, `down`, and manifest adoption.
@@ -41,13 +41,13 @@ or context-only handoff goes back to the person.
 Arm a session only when the person asks for continuous attention on a
 long-running task or while coordinating concurrent worktrees. For a one-shot
 start, diagnose, fix, and confirm, use the service loop in
-[operations.md](operations.md) and stop; do not create a task context or arm a
+[operations.md](operations.md) and stop. Do not create a task context or arm a
 session.
 
-The session owns its poller and is stopped when the task ends. **Nothing on the
-machine creates the task context — you do.** It is your own statement of what
-this task is and which of the fixed options it may present. For a short task,
-pass it inline:
+The session owns its poller and is stopped when the task ends. Nothing on the
+machine creates the task context. You do. It is your own statement of what this
+task is and which of the fixed options it may present. For a short task, pass it
+inline:
 
 ```sh
 oberth attn assess --follow --project "$PWD" \
@@ -56,7 +56,8 @@ oberth attn assess --follow --project "$PWD" \
 ```
 
 For the complete fixed vocabulary, write a file and pass it. Choose a path
-unique to this task; two parallel agents sharing one path overwrite each other.
+unique to this task. Two parallel agents that share one path overwrite each
+other.
 
 ```sh
 cat > "${TMPDIR:-/tmp}/oberth-task-$$.json" <<'JSON'
@@ -74,16 +75,15 @@ oberth attn assess --follow --project "$PWD" --task-context "${TMPDIR:-/tmp}/obe
 
 `--task` and `--authorize` override the same fields from the file. With neither
 a task nor an allow-list, the runner stops with `--task or --task-context is
-required` or `--authorize (or authorized_options) is required` — it will not
-guess an allow-list for you.
+required` or `--authorize (or authorized_options) is required`. It does not
+guess an allow-list.
 
-`authorized_options` is an allow-list for the current task, not user approval;
-side effects still require an explicit user choice. `oberth attn assess
---follow` is the long-lived form of the one-shot `oberth attn assess`. The runner
-reads `$BERTH_HOME/attn.json`
-(default `~/.option-berth/attn.json`); a copy there with `enabled: false` keeps
-the session fact-only and prevents a remote call. Under an isolated `BERTH_HOME` the default home file is not the one being
-read.
+`authorized_options` is an allow-list for the current task, not user approval.
+Side effects still require an explicit user choice. `oberth attn assess --follow`
+is the long-lived form of the one-shot `oberth attn assess`. The runner reads
+`$BERTH_HOME/attn.json` (default `~/.option-berth/attn.json`). A copy there with
+`enabled: false` keeps the session fact-only and prevents a remote call. Under an
+isolated `BERTH_HOME`, the default home file is not the one being read.
 
 For a task that remains active while services run, use the agent-side
 subscription instead of rebuilding the request repeatedly:
@@ -94,24 +94,24 @@ oberth attn assess --follow --project "$PWD" --interval 2s \
 ```
 
 The runner polls the existing CLI contract. It does not add a daemon watcher,
-hook, MCP server, model call to the core engine, or an automatic action path.
-It calls the provider only for a new event/revision or an uncached assessment; normal
-polls are recorded as no-event observations.
+hook, MCP server, model call to the core engine, or an automatic action path. It
+calls the provider only for a new event or revision, or an uncached assessment.
+Normal polls are recorded as no-event observations.
 
 ## Quality feedback
 
 The runner may write its redacted ledger to
-`$BERTH_HOME/quality/events.ndjson`. Keep it local and do not copy it into the
-repository or send it to a provider. When recording feedback, include only the event
-identity, revision, fixed enums, and outcome; never include task text, logs,
-commands, absolute paths, credentials, or free-form model output.
+`$BERTH_HOME/quality/events.ndjson`. Keep it local. Do not copy it into the
+repository or send it to a provider. When recording feedback, include only the
+event identity, revision, fixed enums, and outcome. Never include task text,
+logs, commands, absolute paths, credentials, or free-form model output.
 
-Use `oberth attn status --json --since 0` to inspect local results. A `null` metric
-means there are not enough labeled cases. Read `labeled_cases`,
+Use `oberth attn status --json --since 0` to inspect local results. A `null`
+metric means there are too few labeled cases. Read `labeled_cases`,
 `unlabeled_cases`, and `label_coverage` before interpreting a score. The
 `sessions` object explains whether a quiet ledger came from an armed session
-with no events or from no session being started at all.
+with no events, or from no session at all.
 
 The runner's fixed vocabulary, preflight rules, settings, and exact feedback
-schema are maintained in `docs/agent/attn-adapter.md`; read that document before
-changing or evaluating those interfaces.
+schema are maintained in `docs/agent/attn-adapter.md`. Read that document before
+you change or evaluate those interfaces.

@@ -186,9 +186,9 @@ sources: []              # do not check; the service reloads its own code
 - At start, option-berth records a content fingerprint of these paths and the
   checkout's HEAD. In a Git checkout the file set is tracked files plus
   untracked files Git does not ignore, so `node_modules`, `target`, and `dist`
-  do not enter it even when named in `sources:` — they are usually artifacts
+  do not enter it even when named in `sources:`. They are usually artifacts
   built from the sources. Outside a checkout a fixed ignore list applies.
-- A declared source must not be reached through a symlink; name the target
+- A declared source must not be reached through a symlink. Name the target
   path. Symlinks deeper inside a directory are recorded as links and are not
   followed. This keeps the answer honest instead of reporting a linked tree as
   unchanged.
@@ -290,7 +290,7 @@ It is generated from the Go declaration types; do not edit it by hand.
 - **Unreferenced `machine:` entry.** Its `listening` value is the whole story
   when `machine[].listening_known` is `true`. `false` means the collector cannot
   see that port's owner (the macOS 27 `lsof` fallback); report unknown, not down.
-  It has no start/stop operation and does not need a handoff.
+  It has no start or stop operation and does not need a handoff.
 - **An `observation_*` error, not a manifest problem.** The manifest was read
   successfully; this process cannot see listeners. Do not change the manifest
   or restart services. See [operations.md](operations.md).
