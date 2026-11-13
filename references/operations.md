@@ -36,10 +36,10 @@ default guide for "start it and tell me why it is not running".
    runtime facts, the last failure evidence, and the next bounded command.
 
 The full `oberth status --json` is a different read, not a bigger default: it
-adds the manifest copies, the git summary, `drafts[]`, `changed` and
-`attn_path`. Read it when the task is about one of those — which draft is
-waiting to be adopted, what changed since the last read, the repository
-summary, or the attention handoff — and stay on the brief document otherwise.
+adds the manifest copies, the git summary, `drafts[]`, `changed`, and
+`attn_path`. Read it when the task is about one of those: which draft is waiting
+to be adopted, what changed since the last read, the repository summary, or the
+attention handoff. Stay on the brief document otherwise.
 
 Use `up --wait` (or `--ready`) when readiness matters. It waits for listeners
 and configured health checks; a portless worker is ready when its run is active.
@@ -50,8 +50,8 @@ an ambiguous listener must be narrowed with `--ip ADDRESS`.
 Use `oberth kill` only for a named port or PID, or for the explicitly requested
 all-listener exception. It is not a replacement for `down`.
 
-Keep facts separate from guesses. A missing or ambiguous service/port result is
-actionable output; it is not permission to scan the whole machine.
+Keep facts separate from guesses. A missing or ambiguous service or port result
+is actionable output. It is not permission to scan the whole machine.
 
 `oberth start -- <command>` expands `${<name>.port}`, `${<name>.url}`, and
 `${worktree}` in its arguments from this worktree's address book (services,
@@ -111,7 +111,7 @@ document. Read one shape, not both.
 |---|---|---|
 | `start_failed` | The command could not be started (missing executable, unusable cwd, or outside the home boundary). | Check `cmd` and `cwd`. There is no process log because no process ran. For `outside_home`, pass `--allow-outside-home` only when the person asks; otherwise report the refusal and its hint. |
 | `crashed` (non-zero exit) | The process ran and exited; the cause is in its output. | `oberth logs <service> --once --json --run current --first-error`, fix the generated file, data, or command the line names, then `up` again. |
-| `port_occupied` | The declared fixed port is owned by another process. `last_exit.port_holder` names the process observed at read time. | Do not kill an unrelated process and do not edit `oberth.yaml` to dodge it. Report the port, `last_exit.port_holder`, and let the person decide whether to free the port or change the manifest. |
+| `port_occupied` | The declared fixed port is owned by another process. `last_exit.port_holder` names the process observed at read time. | Do not kill an unrelated process and do not edit `oberth.yaml` to avoid it. Report the port, `last_exit.port_holder`, and let the person decide whether to free the port or change the manifest. |
 | `ready_timeout` | The process started but did not listen or pass `health:` before the deadline. | Read its log; check the bind address, port, and health declaration. Fix the input, then `restart --only <service>`. An already-running instance is not stopped by this timeout. |
 | `dependency_not_ready` / `dependency_timeout` | A declared `depends_on` dependency did not resolve or become ready. | Read the **dependency's** log (`oberth logs <dependency> --once --json`), fix the dependency first, then `up` the dependent. The failure hint names the dependency. |
 | `stopped` / `exited` (code 0) | Normal stop or clean exit, not a failure. | Report the state; do not "recover" it. |
@@ -202,10 +202,10 @@ the manifest is wrong.
 
 `status --json --brief` and the full `status --json` both publish the same top-level `observation`:
 
-~~~json
+```json
 {"state":"bind_denied","code":"observation_bind_denied",
  "detail":"...","hint":"...","checked_at":"..."}
-~~~
+```
 
 Read it before treating `ports` as complete. The fields mean:
 
@@ -220,9 +220,9 @@ On macOS 27 the collector may fall back to `lsof`. That round is still
 `observable` for this process's own listener, and it names the collector in
 `observation.source`:
 
-~~~json
+```json
 {"state":"observable","source":"lsof","detail":"...","checked_at":"..."}
-~~~
+```
 
 A non-empty `observation.source` means the table is narrow: it cannot see
 sockets owned by other users, so a port missing from it is unknown, not free.
@@ -236,7 +236,7 @@ and `doctor`:
 | Code | Meaning | Bounded next step |
 |---|---|---|
 | `observation_empty` | The collector exited 0 but printed no listening table. The self-probe decides whether this is an empty machine or a blind process. | Run `oberth doctor --only listener_observation`; if it is blind, retry outside the sandbox. |
-| `observation_unrecognized` | The output had no table header this build recognizes. This is a format/version problem. | Upgrade option-berth, or report the header line. A sandbox change is not the first fix. |
+| `observation_unrecognized` | The output had no table header this build recognizes. This is a format or version problem. | Upgrade option-berth, or report the header line. A sandbox change is not the first fix. |
 | `observation_incomplete` | Some output rows could not be decoded. Readable rows are published and `observation.state` is `partial`; unreadable ports stay unknown. If the command could not finish at all, it still fails. | Keep the readable rows, do not treat missing ports as free, and retry outside the sandbox if `doctor` agrees. |
 | `observation_blind` | The self-probe can bind a local port but cannot see its own listener. | Retry outside the sandbox or run `doctor --only listener_observation`. Never conclude "nothing is running". |
 | `observation_bind_denied` | The self-probe cannot bind a local port. | Retry outside the sandbox or allow option-berth's network access. Do not start services from here. |
