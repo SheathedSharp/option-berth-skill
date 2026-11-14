@@ -79,16 +79,20 @@ For a service task, the default loop is:
 5. Fix the declared input, repeat the operation, and refresh
    `status --json --brief`.
 
-`attn_path` is optional context, not a required branch after `status`, and the
-brief read does not carry it at all. Read
-[references/attention.md](references/attention.md) only when the task is
-explicitly about the optional assessment, quality feedback, or human handoff,
-or when the full `status --json` published an `attn_path`, the current anomaly
-blocks the task, and a person must choose among the fixed options. A `machine:`
-entry that no declared service `depends_on` is a read-only fact: report its
-`listening` value, and check `machine[].listening_known`. `false` means the
-listener table cannot see that port's owner, so say unknown rather than down.
-Do not hand it off, arm a session, or start it.
+For a task that uses oberth-managed services, a running ad-hoc run, or explicitly
+related worktrees, read `oberth attn status --json` once at task entry. This reads
+local consent, not the provider. If `enabled` is true, attach the existing
+assessment to this task without waiting for the person to say “continuous
+attention”. First bind the exact worktree from `scope.root`, a short redacted
+task summary, and a fixed evaluation allow-list. Follow
+[references/attention.md](references/attention.md) for ownership, reuse,
+compatibility, and cleanup. A docs-only edit or a task with no relevant runtime
+does not need a watcher. Disabled or unavailable configuration stays fact-only;
+do not change settings, test credentials, or create permission on the user's behalf.
+
+The brief document deliberately omits `attn_path`. An attached runner reads the
+full facts itself; do not add a full status read after every brief read merely
+to make the model participate. No eligible event means no provider request.
 
 For code changes, read the worktree-scoped Git summary as well:
 
@@ -158,8 +162,10 @@ the exact steps are in [references/feedback.md](references/feedback.md).
 - A report is about oberth, not the project. Never put a path, service name, log
   line, command line, manifest field, environment value, or credential in a
   report note, and never enable reports on the person's behalf.
-- Do not arm a task-scoped attention session by default. Arm it only when the
-  person explicitly asks for continuous attention on a long-running task.
+- Existing `enabled: true` permits task-scoped runtime assessment, not global
+  monitoring. Attach once per relevant task, reuse only that task's own handle,
+  and close it when the task ends or consent is disabled. Never execute a
+  mutating recommendation without the existing explicit user choice.
 - Refresh `oberth status --json --brief` after a control command, and the full
   `oberth status --json` before acting on a derived attention request.
 

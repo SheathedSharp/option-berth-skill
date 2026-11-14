@@ -52,8 +52,8 @@ current worktree status and use [operations.md](operations.md) to read the
 reason and next step. If the change blocks the task and status publishes
 `attn_path`, read [attention.md](attention.md) only for that decision; do
 not follow an artifact merely because it exists. Arm a task-scoped
-`oberth attn assess --follow` runner only when the person asks for continuous
-attention. The runner watches the same handoffs and records local quality
+`oberth attn assess --follow` runner when enabled for a relevant ongoing task; bind it to the exact worktree and
+reuse only that task's own handle. The runner watches the same handoffs and records local quality
 telemetry without starting, stopping, or restarting a service.
 
 The stream contains runtime facts only: no commands, working directories,
