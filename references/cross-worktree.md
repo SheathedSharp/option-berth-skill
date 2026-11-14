@@ -31,22 +31,22 @@ discover them. Keep the streaming process or session owned by the task, and stop
 it when the relation is no longer needed.
 
 The first NDJSON record is a redacted `state.snapshot`; later records are
-`state.changed` summaries. A worktree selector follows the daemon's existing
-repository relation and includes sibling worktrees. A workspace is an
-ephemeral daemon relation: the first live member must include a worktree or
-repository, and later members may join by workspace name. `--once` reads a
-snapshot without registering membership.
+`state.changed` summaries. A worktree selector follows the runtime service's
+existing repository relation and includes sibling worktrees. A workspace is an
+ephemeral runtime service relation: the first live member must include a
+worktree or repository, and later members may join by workspace name. `--once`
+reads a snapshot without registering membership.
 
-If the daemon lacks `state.scope`, report that limitation and use bounded
-worktree-local status reads instead. Do not automatically restart the daemon
-or broaden the selector to make a stream available. If the stream
-ends, emits `resync_required`, or reports `workspace_changed`, read a fresh
-snapshot with `oberth events --once` before interpreting later changes.
+If the runtime service lacks `state.scope`, report that limitation and use
+bounded worktree-local status reads instead. Do not automatically restart the
+runtime service or broaden the selector to make a stream available. If the
+stream ends, emits `resync_required`, or reports `workspace_changed`, read a
+fresh snapshot with `oberth events --once` before interpreting later changes.
 
-A blind daemon is not an empty machine. `oberth daemon status --json` and
-`daemon.hello` carry the same `observation`; when its `state` is not
-`observable`, do not read missing services or ports from a snapshot as stopped
-or free. See [operations.md](operations.md).
+A blind runtime service is not an empty machine. `oberth runtime service status
+--json` and `runtime.service.hello` carry the same `observation`; when its
+`state` is not `observable`, do not read missing services or ports from a
+snapshot as stopped or free. See [operations.md](operations.md).
 
 A change can report a failure kind such as `service_failed`. On one, refresh the
 current worktree status and use [operations.md](operations.md) to read the

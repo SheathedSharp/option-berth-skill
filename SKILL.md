@@ -2,7 +2,7 @@
 name: option-berth
 description: Use oberth to inspect and operate services for the current worktree, read the engine's failure reason and next step, tell a trustworthy listener observation from a sandbox limitation, and observe explicitly related local worktrees during parallel development.
 metadata:
-  version: "0.10.0"
+  version: "0.11.0"
   source: "github.com/SheathedSharp/option-berth"
 ---
 
@@ -141,15 +141,15 @@ the exact steps are in [references/feedback.md](references/feedback.md).
 
 ## Boundaries
 
-- Facts come from the CLI and daemon. Do not infer runtime facts from model
-  output, ports, process names, branches, or logs that were not published by
-  `oberth`.
+- Facts come from the CLI and its runtime service. Do not infer runtime facts
+  from model output, ports, process names, branches, or logs that were not
+  published by `oberth`.
 - An observation code is evidence about this process, not about the machine.
-  Do not retry the identical sandboxed call, do not start a daemon from the
-  sandbox, and never report an empty `ports` list as "nothing is running".
-  Report the code and hint; the bounded next step is a normal terminal with
-  `oberth serve --detach`, or `oberth doctor --only listener_observation` to
-  confirm the limitation.
+  Do not retry the identical sandboxed call, do not start a runtime service
+  from the sandbox, and never report an empty `ports` list as "nothing is
+  running". Report the code and hint; the bounded next step is a normal terminal
+  with `oberth runtime service run --detach`, or
+  `oberth doctor --only listener_observation` to confirm the limitation.
 - `machine:` entries are read-only dependencies. `up` and `down` do not operate
   them; `kill` requires a specifically named target and the existing approval
   boundary. An unreferenced `machine:` entry never justifies a handoff.

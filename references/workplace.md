@@ -57,7 +57,7 @@ block instead of adding a second, so the start and the end can arrive in either
 order, and a late `running` never overwrites an outcome already recorded. Keep
 output text to the tail you want kept. The record refuses more than 64 KiB.
 
-Recording never starts a daemon. With none listening, `oberth start` and
+Recording never starts a runtime service. With none listening, `oberth start` and
 `oberth agent stream` say so once on stderr and record nothing. Do not read an
 empty workplace as "no work happened".
 

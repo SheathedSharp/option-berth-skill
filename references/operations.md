@@ -84,8 +84,8 @@ exist.
 
 - It never deletes ledger rows, databases, data directories, or running
   processes. Deleting a worktree's data is the person's action.
-- Without a daemon or before any identity is recorded, it returns an empty list;
-  it does not start a daemon or create a database.
+- With no runtime service running and no database yet, it returns an empty list;
+  it does not start a runtime service or create a database.
 - To stop services whose checkout is gone, use
   `oberth down --identity <wt_…>`. The value comes from `worktree.identity` or
   `oberth worktrees`. `down --worktree PATH` does the same while the directory
@@ -165,7 +165,7 @@ carry `exits[].hint`, the deterministic next step (the same hint as
 ports the ended run still held, so an exited run usually has an empty array.
 
 `up --json` and `restart --json` publish `services[].ready` as a CLI
-annotation, not a daemon fact. With `--wait`, it is `true` only after the
+annotation, not a runtime service fact. With `--wait`, it is `true` only after the
 listener (and any declared `health:`) is confirmed; without waiting, a
 `started` service carries `false`, and `skipped` / `failed` omit the field.
 `restart` never waits, so its `started` services are always `ready: false`.
@@ -201,7 +201,8 @@ stable codes are:
 | `ambiguous` | The selector matched more than one target. Narrow it with a name, `--ip`, or a full id. |
 | `permission_denied` | The operating system refused the action. Report it and the hint; do not retry blindly. |
 | `timeout` | The operation did not finish in time. Refresh `status --json --brief` before assuming it had no effect. |
-| `daemon_busy` | Another writer holds the state. Refresh `status --json --brief`, then retry once. |
+| `runtime_service_busy` | Another runtime service or a previous host owns the storage. Read through the active matching runtime service; stop the previous host explicitly before switching. Do not open a second writer. |
+| `runtime_service_unavailable` | The command needs the runtime service and none is running. Start it in a normal terminal with `oberth runtime service run --detach`, or omit the flag that requires the host. |
 | `internal` | An unexpected engine failure. Report `detail` and `hint`; do not translate it into a service failure. |
 | `observation_empty` / `observation_unrecognized` / `observation_incomplete` / `observation_blind` / `observation_bind_denied` | This process cannot produce a trustworthy listener table. See the next section. |
 
@@ -261,17 +262,20 @@ produce `blind` or `empty`. In that situation:
   cannot confirm.
 - `up --wait` returns the observation error immediately and keeps the run it
   just started. It does not wait for the full timeout and then stop it.
-- Write commands that would auto-start a daemon run the self-probe first and
-  refuse to create a daemon from a blind process. The hint names
-  `oberth serve --detach`; that command belongs in a normal terminal, not in
-  the sandbox. Do not start a daemon from the sandbox yourself.
+- Write commands that would auto-start a runtime service run the self-probe
+  first and refuse to create a runtime service from a blind process. The hint
+  names `oberth runtime service run --detach`; that command belongs in a normal
+  terminal, not in the sandbox. Do not start a runtime service from the sandbox
+  yourself.
 - `logs <service>` still reads the managed run's registered `log_path`; it does
   not depend on the listener table.
-- `--no-daemon` makes read commands collect locally. It does not make a
-  sandbox able to see listeners.
+- `--no-runtime-service` makes fact reads collect locally. It does not make a
+  sandbox able to see listeners. An active owner holds the store exclusively:
+  the direct read then fails with `runtime_service_busy`, never empty history.
+  Omit the flag to read through the matching runtime service.
 - `oberth doctor --only listener_observation` binds a real local port and
   reports `observable`, `blind`, or `bind_denied` with the same collector. CLI
-  mode also checks the daemon's own observation.
+  mode also checks the runtime service's own observation.
 - Do not parse `internal`, do not retry the identical command, and do not ask
   the person to run the whole task again inside the sandbox. The code and hint
   are the contract; the next step is outside the sandbox.

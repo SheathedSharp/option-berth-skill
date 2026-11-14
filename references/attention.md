@@ -132,10 +132,10 @@ alone do not wake the task. Reconnect/drop/restart refreshes a snapshot; a
 connected task also performs low-frequency reconciliation. `--interval` controls
 consent checks and offline fallback polling, not model frequency. A missing,
 older or disconnected Runtime Service safely uses the existing polling path;
-do not restart or start a daemon merely to enable event delivery. The engine
-owns feature detection; do not invent a new CLI flag or infer support from the
-skill version. Engines without the earlier `quality.activity` safety contract
-still use the bounded one-shot recipe above.
+do not restart or start a runtime service merely to enable event delivery. The
+engine owns feature detection; do not invent a new CLI flag or infer support
+from the skill version. Engines without the earlier `quality.activity` safety
+contract still use the bounded one-shot recipe above.
 
 No global watcher, hook, MCP server, model call in the Runtime Service, or
 automatic action path is introduced. Consent revocation and task exit close
