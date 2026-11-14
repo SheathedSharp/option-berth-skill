@@ -34,7 +34,7 @@ Each entry in `services`:
 | `env_file` | A dotenv-style file read before `prepare` and `cmd`; relative to the manifest directory. Its contents do not enter `status`, logs, or `spec_hash`. | A service that cannot start because the file is missing or malformed. |
 | `description`, `icon`, `color` | User-authored metadata shown by clients; they do not change runtime behavior. | Nothing. |
 
-`port: auto` is assigned by the daemon. `restart --only` keeps that reservation
+`port: auto` is assigned by the runtime service. `restart --only` keeps that reservation
 so the service comes back on the same address; `down` releases it only after the
 stop is confirmed.
 
@@ -69,7 +69,7 @@ health: {command: pg_isready -h 127.0.0.1 -p ${port}}
 `prepare:`, `cmd:`, and `env:` may reference ports and the checkout identity.
 A command-form `health:` supports `${port}`, `${url}`, `${<name>.port}`, and
 `${worktree}`, but not `${<name>.url}` and not a `workspace:` address. The
-daemon expands them before starting the service:
+runtime service expands them before starting the service:
 
 | Reference | Expands to |
 |---|---|
@@ -90,7 +90,7 @@ daemon expands them before starting the service:
   identifier, not a path: use it in a database name (`app_${worktree}`) or a
   relative data directory (`.data/${worktree}`).
 - The current value is published as `worktree.identity` in `status --json`.
-  `oberth worktrees` lists the identities this daemon has seen. Use those
+  `oberth worktrees` lists the identities this runtime service has seen. Use those
   values when connecting a database or finding old data; the engine does not
   delete data.
 - Moving a checkout produces a new identity; old data is not moved. `${worktree}`
@@ -116,12 +116,12 @@ env_file: ../shared/dev.env
   prefix is accepted. Single-quoted values are literal; double-quoted values
   support `\n`, `\r`, `\t`, `\\`, and `\"`.
 - Values are not interpolated: `${...}` stays literal.
-- Environment precedence, low to high: the daemon's own environment, the
+- Environment precedence, low to high: the runtime service's own environment, the
   caller's environment, `env_file`, `PORT`, the service's own `env:`.
 - A missing file, a non-regular file, or a malformed line fails the service
   start. The error names the file and line and does not print values.
 - The contents do not enter `status`, logs, or `spec_hash`. Changing the file
-  does not require a daemon restart, but a running service must restart to read
+  does not require a runtime service restart, but a running service must restart to read
   it. option-berth never creates or modifies the file; secrets belong here, not
   in the manifest.
 
@@ -142,7 +142,7 @@ workspace:
   manifest.
 - `prepare:`, `cmd:`, and `env:` can then use `${backend.port}` /
   `${backend.url}`.
-- Resolution reads the other manifest and the daemon's published runtime facts:
+- Resolution reads the other manifest and the runtime service's published runtime facts:
   a running service uses its actual port (including `port: auto`); a stopped
   service with a fixed port uses the declared address; `port: auto` without a
   running service is unaddressable and the referencing service fails to start
@@ -255,7 +255,7 @@ It is generated from the Go declaration types; do not edit it by hand.
 - The default parser still ignores unknown keys for compatibility. Set
   `BERTH_STRICT_MANIFEST=1` (also `true`, `yes`, `on`) to turn them into load
   errors with file, line, and column. It applies to every manifest read path:
-  the CLI, the daemon, and `oberth init adopt`. Top-level `x-` and `$schema`
+  the CLI, the runtime service, and `oberth init adopt`. Top-level `x-` and `$schema`
   remain valid.
 - `doctor --only project_config` reports ignored keys as warnings with their
   location in the default mode. It does not print field values and does not

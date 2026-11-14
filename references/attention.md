@@ -122,7 +122,7 @@ oberth attn assess --follow --project "$PWD" --interval 2s \
 ```
 
 The runner polls the existing CLI contract, rechecking enabled consent each time.
-It does not add a daemon watcher,
+It does not add a runtime service watcher,
 hook, MCP server, model call to the core engine, or an automatic action path. It
 calls the provider only for a new event or revision, or an uncached assessment.
 Normal polls are recorded as no-event observations, not model calls. Output
