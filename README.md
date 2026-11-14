@@ -15,7 +15,7 @@ its `--json` contract:
 | macOS client | [SheathedSharp/option-berth-macos](https://github.com/SheathedSharp/option-berth-macos) | A native interface over the same facts. |
 | Skill (this repository) | [SheathedSharp/option-berth-skill](https://github.com/SheathedSharp/option-berth-skill) | Teaches an agent to use those facts. |
 
-The current version is **0.9.2**. Both READMEs ship with the skill, so this
+The current version is **0.10.0**. Both READMEs ship with the skill, so this
 number is the version of the copy you have.
 
 ## Install

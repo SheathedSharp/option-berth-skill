@@ -2,7 +2,7 @@
 name: option-berth
 description: Use oberth to inspect and operate services for the current worktree, read the engine's failure reason and next step, tell a trustworthy listener observation from a sandbox limitation, and observe explicitly related local worktrees during parallel development.
 metadata:
-  version: "0.9.2"
+  version: "0.10.0"
   source: "github.com/SheathedSharp/option-berth"
 ---
 
@@ -49,7 +49,7 @@ the start line its `not_found` hint prints (or `oberth start` with the same
 group, name and port).
 
 Read `observation` before you use `ports`: `ports: []` together with
-`observation.state: blind` or `bind_denied` means this process cannot see
+`observation.state: blind`, `bind_denied`, or `partial` means this process cannot see
 listeners, not that nothing is running. The observation section of
 [references/operations.md](references/operations.md) says what to do next.
 
@@ -93,6 +93,9 @@ do not change settings, test credentials, or create permission on the user's beh
 The brief document deliberately omits `attn_path`. An attached runner reads the
 full facts itself; do not add a full status read after every brief read merely
 to make the model participate. No eligible event means no provider request.
+A current follow runner owns event wakeups, reconnect and low-frequency
+calibration; do not add another watcher for the same task. Older engines keep
+the bounded fallback described in the attention guide.
 
 For code changes, read the worktree-scoped Git summary as well:
 

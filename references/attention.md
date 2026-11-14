@@ -68,12 +68,12 @@ into an isolated state directory to make it look enabled.
 
 When the task finishes, is cancelled, changes scope, or the user disables
 attention, cancel/join the owned tool session and remove only this task's
-context file. The current runner also rechecks consent on every poll and exits
+context file. The current runner also rechecks consent while idle and before each fact read, and exits
 when it is revoked. Do not use broad process-name kills, port kills, or touch
 another task's runner. If the agent cannot own and reliably close a background
 handle, use one-shot assessment at meaningful boundaries instead.
 
-The session owns its poller and is stopped when the task ends. Nothing on the
+The session owns its observation feed and is stopped when the task ends. Nothing on the
 machine creates the task context. You do. It is your own statement of what this
 task is and which of the fixed options it may present. For a short task, pass it
 inline:
@@ -121,13 +121,29 @@ oberth attn assess --follow --project "$PWD" --interval 2s \
   --task-context "${TMPDIR:-/tmp}/oberth-task-$$.json"
 ```
 
-The runner polls the existing CLI contract, rechecking enabled consent each time.
-It does not add a daemon watcher,
-hook, MCP server, model call to the core engine, or an automatic action path. It
-calls the provider only for a new event or revision, or an uncached assessment.
-Normal polls are recorded as no-event observations, not model calls. Output
-NDJSON still emits only changes; local observation freshness and counters are
-updated even when an unchanged poll prints nothing.
+The current runner reuses scoped runtime changes from an existing local Runtime
+Service, filters to this exact task worktree, and deduplicates its sequence.
+Do not start a second `oberth events` watcher for the same follow session.
+An existing broader integration stream may remain only when the task genuinely
+needs its other authorized worktrees; it does not grant assessment scope.
+
+Changes wake a bounded status/artifact read, not a model call. Resource samples
+alone do not wake the task. Reconnect/drop/restart refreshes a snapshot; a
+connected task also performs low-frequency reconciliation. `--interval` controls
+consent checks and offline fallback polling, not model frequency. A missing,
+older or disconnected Runtime Service safely uses the existing polling path;
+do not restart or start a daemon merely to enable event delivery. The engine
+owns feature detection; do not invent a new CLI flag or infer support from the
+skill version. Engines without the earlier `quality.activity` safety contract
+still use the bounded one-shot recipe above.
+
+No global watcher, hook, MCP server, model call in the Runtime Service, or
+automatic action path is introduced. Consent revocation and task exit close
+only the owned session/feed. The provider runs only for an eligible uncached
+assessment; a fresh exact-artifact check after model/cache return still binds
+any suggestion to the current run facts. Normal observations are not model
+calls. NDJSON emits changes only; local freshness and counters update on
+completed fact observations, not on idle configuration checks.
 
 ## Quality feedback
 
