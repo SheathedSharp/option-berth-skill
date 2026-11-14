@@ -37,8 +37,9 @@ ephemeral daemon relation: the first live member must include a worktree or
 repository, and later members may join by workspace name. `--once` reads a
 snapshot without registering membership.
 
-If the daemon lacks `state.scope`, restart it with `oberth daemon restart`, then
-refresh the current worktree status before taking any action. If the stream
+If the daemon lacks `state.scope`, report that limitation and use bounded
+worktree-local status reads instead. Do not automatically restart the daemon
+or broaden the selector to make a stream available. If the stream
 ends, emits `resync_required`, or reports `workspace_changed`, read a fresh
 snapshot with `oberth events --once` before interpreting later changes.
 
@@ -54,7 +55,10 @@ reason and next step. If the change blocks the task and status publishes
 not follow an artifact merely because it exists. Arm a task-scoped
 `oberth attn assess --follow` runner when enabled for a relevant ongoing task; bind it to the exact worktree and
 reuse only that task's own handle. The runner watches the same handoffs and records local quality
-telemetry without starting, stopping, or restarting a service.
+telemetry without starting, stopping, or restarting a service. Do not add a
+second events watcher for that same follow task: current engines already own
+the change feed, with exact-task filtering and polling fallback. A broader
+integration relation remains a separate, explicitly selected observation need.
 
 The stream contains runtime facts only: no commands, working directories,
 logs, or environment values. It never starts, stops, or restarts a service.

@@ -15,6 +15,14 @@ class AttentionPolicy(unittest.TestCase):
             self.assertIn(rule, guide)
         self.assertIn("explicit choice before execution", guide)
         self.assertIn("No eligible event means no provider request", (ROOT / "SKILL.md").read_text())
+    def test_event_wakeups_have_safe_ownership_calibration_and_fallback(self):
+        guide = (ROOT / "references/attention.md").read_text()
+        for rule in ("Do not start a second", "exact task worktree", "Resource samples", "low-frequency reconciliation", "offline fallback", "do not restart or start", "after model/cache return", "only the owned session/feed"):
+            self.assertIn(rule, guide)
+        cross = (ROOT / "references/cross-worktree.md").read_text()
+        self.assertIn("Do not automatically restart", cross)
+        self.assertIn("broader", cross)
+
     def test_disabled_configuration_is_not_changed_by_the_agent(self):
         guide = (ROOT / "references/attention.md").read_text()
         self.assertIn("do not enable, reconfigure, or probe credentials", guide)
