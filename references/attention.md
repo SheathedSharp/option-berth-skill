@@ -72,6 +72,7 @@ context file. The current runner also rechecks consent on every poll and exits
 when it is revoked. Do not use broad process-name kills, port kills, or touch
 another task's runner. If the agent cannot own and reliably close a background
 handle, use one-shot assessment at meaningful boundaries instead.
+
 The session owns its poller and is stopped when the task ends. Nothing on the
 machine creates the task context. You do. It is your own statement of what this
 task is and which of the fixed options it may present. For a short task, pass it
