@@ -13,7 +13,7 @@
 | macOS 客户端 | [SheathedSharp/option-berth-macos](https://github.com/SheathedSharp/option-berth-macos) | 原生界面，呈现同一份事实 |
 | skill（本仓库） | [SheathedSharp/option-berth-skill](https://github.com/SheathedSharp/option-berth-skill) | 教会 agent 使用这份事实 |
 
-当前版本 **0.9.2**。两份 README 都随 skill 一起分发，因此这里的版本号就是本地副本的版本号。
+当前版本 **0.10.0**。两份 README 都随 skill 一起分发，因此这里的版本号就是本地副本的版本号。
 
 ## 安装
 

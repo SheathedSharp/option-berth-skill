@@ -1,6 +1,6 @@
 {
   "name": "option-berth",
-  "version": "0.9.2",
+  "version": "0.10.0",
   "description": "Teach a coding agent to inspect and operate one worktree's services with oberth.",
   "author": {
     "name": "SheathedSharp",
