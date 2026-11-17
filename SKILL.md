@@ -2,7 +2,7 @@
 name: option-berth
 description: Use oberth to inspect and operate services for the current worktree, read the engine's failure reason and next step, tell a trustworthy listener observation from a sandbox limitation, and observe explicitly related local worktrees during parallel development.
 metadata:
-  version: "0.11.0"
+  version: "0.12.0"
   source: "github.com/SheathedSharp/option-berth"
 ---
 
@@ -41,12 +41,25 @@ first, and use `exit_reason` for a service that is down. A running service with
 a declared health check may carry `health.status: unknown` with
 `reason: pending` before its first probe; that is not a failure.
 
-`worktree.ad_hoc_runs` lists runs started with `oberth start` that the manifest
-does not declare: `name`, `run_id`, `group`, `pid` and the `ports` each holds.
-Those ports belong to oberth, not to a stray process, so do not kill them by
-port. `restart --only` accepts only declared services; for an ad-hoc run, use
-the start line its `not_found` hint prints (or `oberth start` with the same
-group, name and port).
+`worktree.ad_hoc_runs` attributes every listener that no running service row
+already names: an `oberth start` run the manifest does not declare, a stale
+generation still using a declared service's name, or a declared service's run
+holding an extra port. Each row has `name`, `run_id`, `group`, `pid`, the
+recorded `cmd`, `cwd` and `started_at` when the run mirror still has them, and
+the `ports` it holds. The identity is `run_id`, not the name. Those ports belong
+to oberth, so do not kill them by port. `worktree.unowned_ports` is the rest:
+listeners with no option-berth run, each with `port` and, when observable, `pid`
+and `command`; do not kill one without checking what it is.
+`worktree.running_services` counts declared services only; the runs above are
+not in that number.
+
+`restart --run <id|name>` is the first-class restart for any run, including one
+the manifest does not declare: it stops that exact run (portless runs included)
+and starts its recorded `argv`, cwd, group, name and port hint again. A name is
+accepted only when exactly one live run has it; use the `run_id` when two do. A
+run that predates recorded argv is not guessed at: the `not_found` hint prints
+its recorded start line instead. `restart --only` still accepts only declared
+services.
 
 Read `observation` before you use `ports`: `ports: []` together with
 `observation.state: blind`, `bind_denied`, or `partial` means this process cannot see
@@ -65,7 +78,10 @@ For a service task, the default loop is:
    `oberth restart --only <service> --json`, or `oberth down --json`. A
    `started` service with `services[].ready: false` is not confirmed ready. It
    is not a failure. Without `--wait`, `up` publishes `next` when readiness is
-   unconfirmed; run that command instead of polling sockets.
+   unconfirmed; run that command instead of polling sockets. For an ad-hoc run,
+   use `oberth restart --run <run_id>` instead of `restart --only`. A restart
+   warning about changed sources or a rebuilt executable means the restart does
+   not rebuild: report it, and build first when the task needs the new code.
 3. On failure, match `services[].exit_reason` and, when present,
    `services[].health.status` against the table in
    [references/operations.md](references/operations.md), read the log the
@@ -81,7 +97,9 @@ For a service task, the default loop is:
 
 For a task that uses oberth-managed services, a running ad-hoc run, or explicitly
 related worktrees, read `oberth attn status --json` once at task entry. This reads
-local consent, not the provider. If `enabled` is true, attach the existing
+local consent, not the provider; the default document is the decision plus a
+quality summary and still carries `quality.activity`. Add `--quality` only when
+the task needs the full ledger; `--since` and `--quality-project` imply it. If `enabled` is true, attach the existing
 assessment to this task without waiting for the person to say “continuous
 attention”. First bind the exact worktree from `scope.root`, a short redacted
 task summary, and a fixed evaluation allow-list. Follow
