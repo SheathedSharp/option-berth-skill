@@ -255,6 +255,18 @@ Do not report a `machine:` dependency as down from absence in that round. Read
 `machine[].listening_known`: `false` means unknown; `true` with
 `listening: false` means the absence was observed.
 
+When `runtime_service.observe_sources` is greater than 1, the runtime service may
+union several collector tables in one round. That round publishes
+`observation.sources`, the names of every collector that contributed (for example
+`["netstat","lsof"]`), and leaves `observation.source` empty. A port missing from
+the union is still unknown unless every listed collector can see other users'
+sockets; the same `machine[].listening_known` rule applies.
+
+`observation.degraded_since` is the RFC 3339 time this degradation began; it is
+absent while the observation is fully healthy. `observation.recovered_at` is the
+first healthy check after a degradation and stays until the next one.
+`checked_at` is when this observation was taken, not when the degradation began.
+
 The matching stable error codes appear in command errors, `up --wait`, `logs`,
 and `doctor`:
 
