@@ -6,6 +6,12 @@ whether this installation agreed. When `enabled` is false, send nothing and do
 not ask the person to turn it on; mention it only if they ask why nothing was
 filed.
 
+`feedback status --json`'s `github.state` is `signed_in`, `credential_unconfirmed`,
+`signed_out`, `not_installed` or `unknown`; `available: true` means a report will
+be attempted through `gh`. `credential_unconfirmed` means a credential is stored
+but github.com could not be reached at status time — a report is still attempted
+through `gh`, so do not tell the person they are signed out.
+
 ## When it is worth a report
 
 File one only when oberth itself got in the way in one of these fixed ways. The
@@ -64,11 +70,11 @@ them.
    `--yes` only after they agreed: without it, a free-text report is refused on
    a non-terminal.
 4. Report the outcome to the person: a filed issue URL, or the prefilled
-   `issues/new` link when `gh` is not signed in. Do not ask them to install
-   `gh`; the link path is the supported fallback.
+   `issues/new` link when no `gh` credential is stored. Do not ask them to
+   install `gh`; the link path is the supported fallback.
 5. File at most one report per problem in a session. The engine already refuses
    the same complaint from the same build for 24 hours, and caps an
-   installation at five reports a day; do not work around either.
+   installation at twenty reports a day; do not work around either.
 
 ## Boundaries
 

@@ -4,9 +4,11 @@ Use this guide when entering an oberth-related runtime task, when a deterministi
 anomaly needs assessment, or when explaining local quality data. It does not
 turn an unrelated coding task into a background monitoring job.
 
-At task entry read `oberth attn status --json` once. `enabled` means permission
-to assess this task's bounded runtime events, not that a runner is already
-observing. Do not ask the person to repeat a special “continuous attention”
+At task entry read `oberth attn status --json` once. The default document is the
+decision plus a quality summary and still carries `quality.activity`; add
+`--quality` only when the full ledger is needed (`--since` and
+`--quality-project` imply it). `enabled` means permission to assess this task's
+bounded runtime events, not that a runner is already observing. Do not ask the person to repeat a special “continuous attention”
 phrase when this permission is already enabled. If off, missing configuration,
 or unavailable, continue the ordinary fact-only service loop and explain the
 fixed reason once; do not enable, reconfigure, or probe credentials.
@@ -54,7 +56,7 @@ there is no need to leave a poller behind. The runner itself does not call the
 provider when no eligible anomaly is present.
 
 Compatibility: automatic long-lived attachment requires the engine's
-`quality.activity` field in the local attn status. If it is absent, use bounded
+`quality.activity` field in the local attn status (the default summary keeps it). If it is absent, use bounded
 one-shot assessment with a fresh consent check before each attempt; do not
 assume an older runner stops when settings change. Report that limitation once.
 No new command is required on the older engine.
@@ -153,7 +155,8 @@ repository or send it to a provider. When recording feedback, include only the
 event identity, revision, fixed enums, and outcome. Never include task text,
 logs, commands, absolute paths, credentials, or free-form model output.
 
-Use `oberth attn status --json --since 0` to inspect local results. A `null`
+Use `oberth attn status --json --since 0` to inspect local results (the filter
+implies `--quality`). A `null`
 metric means there are too few labeled cases. Read `labeled_cases`,
 `unlabeled_cases`, and `label_coverage` before interpreting a score. The
 `sessions` object explains whether a quiet ledger came from an armed session
