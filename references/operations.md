@@ -12,8 +12,10 @@ default guide for "start it and tell me why it is not running".
    `unknown` with `reason: pending` means the first probe has not run yet), the
    current exit reason and code, `code_changed_since_start`,
    `executable_changed_since_start` (a directly-run binary rebuilt after the
-   run started), the attributed listeners, `worktree.ad_hoc_runs` (runs started
-   with `oberth start`, with their ports), and the top-level `observation`. A service that is still coming
+   run started), the attributed listeners, `worktree.ad_hoc_runs` (each run's
+   `run_id`, `name`, recorded `cmd`/`cwd`/`started_at` and `ports`),
+   `worktree.unowned_ports` (listeners no run owns), and the top-level
+   `observation`. `worktree.running_services` counts declared services only. A service that is still coming
    up carries `services[].starting` with `starting.phase` (`waiting_dependency`,
    `prepare`, `spawning`), `starting.waiting_on`, `starting.elapsed_ms`,
    `starting.ready_timeout` and `starting.last_prepare_ms`. That is an
@@ -41,9 +43,17 @@ default guide for "start it and tell me why it is not running".
    runtime facts, the last failure evidence, and the next bounded command.
 
 Ports in `worktree.ad_hoc_runs` belong to oberth even though no manifest
-declares the run. Do not kill them by port. `restart --only` only accepts
-declared services; for an ad-hoc run, use the start line its `not_found` hint
-prints, or `oberth start` with the same group, name and port.
+declares the run. Do not kill them by port. `restart --run <run_id|name>` is the
+first-class restart for an ad-hoc run: it stops that exact run and replays its
+recorded argv, cwd, group, name and port. A name works only when exactly one
+live run has it. If the run predates recorded argv, the `not_found` hint prints
+the recorded start line instead; do not reconstruct the command from `cmd` by
+guessing at quotes. `restart --only` still accepts only declared services.
+
+`restart` prints a warning before stopping when a running service's `sources:`
+changed since it started, or its executable was rebuilt after the run. The
+warning does not rebuild anything: report it, and build first when the task
+needs the new code. A restart warning is not a start failure.
 
 The full `oberth status --json` is a different read, not a bigger default: it
 adds the manifest copies, the git summary, `drafts[]`, `changed`, and
@@ -55,7 +65,11 @@ Use `up --wait` (or `--ready`) when readiness matters. It waits for listeners
 and configured health checks; a portless worker is ready when its run is active.
 Use `--force` only when a graceful stop failed and the person asked for it.
 Use `logs --follow` for a live log stream. A port is accepted for scripts, but
-an ambiguous listener must be narrowed with `--ip ADDRESS`.
+an ambiguous listener must be narrowed with `--ip ADDRESS`. `logs <service>`
+reads the current run's segment of an append-only service log, not the whole
+file; `--run current` pins the generation explicitly and also works offline for
+a service log file. If the JSON carries `run_start_unknown: true`, the lines may
+include earlier runs — say so before interpreting them.
 
 Use `oberth kill` only for a named port or PID, or for the explicitly requested
 all-listener exception. It is not a replacement for `down`.
