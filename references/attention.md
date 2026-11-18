@@ -53,7 +53,7 @@ The native lifecycle adapter is verified with Claude Code 2.1.322 on macOS.
 Project enablement is required; an installed skill or `attn on` is not proof
 that a native `cld`/`claude` task attached. Do not install hooks or modify the
 person's settings on your own. The CLI prints a configuration for review, not
-an installation. The [CLI contract](https://github.com/SheathedSharp/option-berth/blob/main/docs/cli.md#native-claude-project-hooks)
+an installation. The [CLI contract](https://github.com/SheathedSharp/option-berth/blob/main/docs/cli/handoff.md#native-claude-project-hooks)
 owns flags, configuration examples, support boundaries and output details.
 
 When enabled, UserPromptSubmit binds exact worktree, opaque session and task
