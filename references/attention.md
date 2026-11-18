@@ -49,7 +49,12 @@ or context-only handoff goes back to the person.
 
 ## Native Claude task entry
 
-The native lifecycle adapter is verified with Claude Code 2.1.322 on macOS.
+The native lifecycle adapter has non-interactive (`-p`) end-to-end evidence
+with Claude Code 2.1.322 on macOS and local fake providers. Interactive TTY and
+the private `cld` wrapper are not verified: the clean-HOME PTY probe stopped at
+Claude’s first-run Anthropic connectivity check under refusing nonlocal proxies,
+before any task or hook feedback. Do not infer interactive coverage from `-p`
+or bypass project trust/onboarding to claim it.
 Project enablement is required; an installed skill or `attn on` is not proof
 that a native `cld`/`claude` task attached. Do not install hooks or modify the
 person's settings on your own. The CLI prints a configuration for review, not
