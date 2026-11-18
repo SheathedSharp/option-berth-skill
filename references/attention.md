@@ -47,9 +47,47 @@ bounded next steps. After the person chooses, run only the documented command,
 report its result, and read status again. A low-confidence, stale, conflicting,
 or context-only handoff goes back to the person.
 
+## Native Claude task entry
+
+The native lifecycle adapter has non-interactive (`-p`) end-to-end evidence
+with Claude Code 2.1.322 on macOS and local fake providers. Interactive TTY and
+the private `cld` wrapper are not verified: the clean-HOME PTY probe stopped at
+Claude’s first-run Anthropic connectivity check under refusing nonlocal proxies,
+before any task or hook feedback. Do not infer interactive coverage from `-p`
+or bypass project trust/onboarding to claim it.
+Project enablement is required; an installed skill or `attn on` is not proof
+that a native `cld`/`claude` task attached. Do not install hooks or modify the
+person's settings on your own. The CLI prints a configuration for review, not
+an installation. The [CLI contract](https://github.com/SheathedSharp/option-berth/blob/main/docs/cli/handoff.md#native-claude-project-hooks)
+owns flags, configuration examples, support boundaries and output details.
+
+When enabled, UserPromptSubmit binds exact worktree, opaque session and task
+generation. A fixed conservative summary—not the prompt/transcript—goes to
+assessment. Explicit project service selectors or exact already-recorded run
+IDs and read-only options supply the scope; do not guess ownership by name.
+Missing scope/permission/configuration or a pure-edit session reports a reason.
+No service or manifest is created. Reuse the selected Runtime facts even when
+Attention is off, and retain unknown observation rather than treating it as down.
+
+The hook owns one existing runner, including scoped changes/reconnect/cache.
+Do not create another follow session. At Stop it cancels/joins observation and
+revalidates consent, configuration, scope, revision and freshness before
+returning related read-only or human-required findings through official JSON.
+Claude can report/inspect at most once; stop_hook_active and consumption prevent
+loops. Evidence does not grant tool permissions, approve side effects or prove
+that the agent fixed a fault. Never start/stop services because the model suggested it.
+
+StopFailure/SessionEnd and replacement tasks close without replay. A fixed
+lease of at most 10 minutes also reclaims lost sessions; an interrupt without a
+lifecycle callback waits for the next prompt or that deadline. Killed/expired
+observers never resume pending feedback. Only owned observation is reclaimed;
+shared services stay running. The public multi-provider stream bridge is removed;
+other native agents have no equivalent automatic attachment in this adapter.
+
 ## Task-scoped runner and ownership
 
-For a relevant task that continues while services run, attach one task-owned
+When no lifecycle adapter already owns it, for a relevant task that continues
+while services run, attach one task-owned
 `assess --follow` session after the local consent check. For a short task or a
 single decision, use one-shot `assess` with the same explicit scope and options;
 there is no need to leave a poller behind. The runner itself does not call the
@@ -75,8 +113,8 @@ when it is revoked. Do not use broad process-name kills, port kills, or touch
 another task's runner. If the agent cannot own and reliably close a background
 handle, use one-shot assessment at meaningful boundaries instead.
 
-The session owns its observation feed and is stopped when the task ends. Nothing on the
-machine creates the task context. You do. It is your own statement of what this
+The session owns its observation feed and is stopped when the task ends. For this manual runner, you supply the task context; the native project
+hooks instead use their explicitly reviewed scope and conservative label. It is your own statement of what this
 task is and which of the fixed options it may present. For a short task, pass it
 inline:
 
@@ -139,7 +177,7 @@ engine owns feature detection; do not invent a new CLI flag or infer support
 from the skill version. Engines without the earlier `quality.activity` safety
 contract still use the bounded one-shot recipe above.
 
-No global watcher, hook, MCP server, model call in the Runtime Service, or
+No global watcher, global hook, MCP server, model call in the Runtime Service, or
 automatic action path is introduced. Consent revocation and task exit close
 only the owned session/feed. The provider runs only for an eligible uncached
 assessment; a fresh exact-artifact check after model/cache return still binds

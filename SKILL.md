@@ -95,6 +95,14 @@ For a service task, the default loop is:
 5. Fix the declared input, repeat the operation, and refresh
    `status --json --brief`.
 
+When a native Claude project explicitly enabled Oberth's lifecycle hooks, use
+that task's selected Runtime facts and hook-owned observation. Do not start a
+second runner. The hooks—not this skill—bind the native session, task generation
+and read-only scope, then return fresh evidence once through official Stop JSON.
+Without reviewed project enablement, ordinary `cld`/`claude` has no automatic
+attachment. The public `agent stream` bridge has been removed. See
+[references/attention.md](references/attention.md) for supported versions and limits.
+
 For a task that uses oberth-managed services, a running ad-hoc run, or explicitly
 related worktrees, read `oberth attn status --json` once at task entry. This reads
 local consent, not the provider; the default document is the decision plus a
@@ -178,8 +186,8 @@ the exact steps are in [references/feedback.md](references/feedback.md).
   directory is gone, use `oberth down --identity <wt_…>`.
 - A person owns `oberth.yaml`. The agent may draft and explain a manifest, but
   adoption is an explicit human choice. Do not edit it to hide a failure.
-- Do not write hooks, MCP registrations, agent configuration, or a second
-  product model. Do not answer the whole-machine port-radar question.
+- Do not install hooks or edit agent settings without explicit project enablement;
+  never create global hooks, MCP registrations, or a second product model. Do not answer the whole-machine port-radar question.
 - A report is about oberth, not the project. Never put a path, service name, log
   line, command line, manifest field, environment value, or credential in a
   report note, and never enable reports on the person's behalf.
