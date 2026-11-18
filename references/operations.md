@@ -262,6 +262,11 @@ union several collector tables in one round. That round publishes
 the union is still unknown unless every listed collector can see other users'
 sockets; the same `machine[].listening_known` rule applies.
 
+The same round gives every row `ports[].source`, the collector that produced it.
+The rungs cover different sockets, so a row of a merged table is only weighable
+with the name of the table it came from. A row from a single-collector read has
+no `source`; that round's one collector is `observation.source` instead.
+
 `observation.degraded_since` is the RFC 3339 time this degradation began; it is
 absent while the observation is fully healthy. `observation.recovered_at` is the
 first healthy check after a degradation and stays until the next one.
