@@ -95,6 +95,12 @@ For a service task, the default loop is:
 5. Fix the declared input, repeat the operation, and refresh
    `status --json --brief`.
 
+When a supported `oberth agent stream` client already owns this task's runtime
+scope, use its Runtime facts and observation lifecycle rather than starting a
+second runner. Its task contract and terminal status are documented in
+[references/attention.md](references/attention.md). A directly launched agent
+or native `agent run` has no such automatic attachment.
+
 For a task that uses oberth-managed services, a running ad-hoc run, or explicitly
 related worktrees, read `oberth attn status --json` once at task entry. This reads
 local consent, not the provider; the default document is the decision plus a

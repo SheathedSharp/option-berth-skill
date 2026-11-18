@@ -47,6 +47,31 @@ bounded next steps. After the person chooses, run only the documented command,
 report its result, and read status again. A low-confidence, stale, conflicting,
 or context-only handoff goes back to the person.
 
+## Structured task entry
+
+A supported `oberth agent stream` caller can attach one observer by supplying
+explicit runtime metadata at task entry: a short redacted task summary plus
+selected declared services or exact recorded run IDs in its selected worktree.
+It supplies the Runtime context to the native agent and, when local assessment
+consent is already enabled, owns the existing scoped runner. Do not create a
+second watcher for that task. No raw prompt is used as the assessment summary.
+
+This is not automatic attachment for direct agent launches or native `agent
+run`, and the skill being installed is not proof that a stream client supplied
+scope. Missing scope/configuration is visible as `runtime.status`, not an
+observation silently inferred from `on`. The caller must support the
+[stream task contract](https://github.com/SheathedSharp/option-berth/blob/main/docs/cli.md#oberth-agent-stream).
+
+The stream can return a freshly revalidated handoff through at most one native
+continuation after the original turn completes; keep consuming until the
+runtime task's terminal status, not just the original `turn.completed`. A
+completed continuation is delivery evidence, not proof that advice was obeyed.
+No in-flight terminal injection or action approval is added. The bridge joins
+its observer on task finish, interruption, session close or cancellation and
+leaves shared services running. Scope is fixed for that task: newly created
+ad-hoc runs need an explicit association on a subsequent task; never adopt a
+same-named process by guessing.
+
 ## Task-scoped runner and ownership
 
 For a relevant task that continues while services run, attach one task-owned
